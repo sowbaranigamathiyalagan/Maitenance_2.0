@@ -6,13 +6,16 @@ import { Settings } from './modules/settings/settings';
 import { Scanner } from './modules/scanner/scanner';
 import { Quality } from './modules/quality/quality';
 import { LayoutComponent } from './layout/layout/layout';
+import { authGuard, loginGuard } from './core/guards/auth.guard';
+
 
 export const routes: Routes = [
-  { path: '', component: LoginComponent },
-  { path: 'login', component: LoginComponent },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent, canActivate: [loginGuard] },
   {
     path: '',
     component: LayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'overview', component: Overview },
       { path: 'scanner', component: Scanner },
@@ -21,4 +24,5 @@ export const routes: Routes = [
       { path: 'quality', component: Quality }
     ]
   }
+
 ];
