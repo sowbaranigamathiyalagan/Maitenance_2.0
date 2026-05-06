@@ -7,21 +7,43 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class Intimation {
-  private createUrl = `${environment.apiUrl}/api/tool-intimation/create`;
-  private approveUrl = `${environment.apiUrl}/api/tool-intimation/approve`;
-  private listUrl = `${environment.apiUrl}/api/tool-intimation/list`;
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
+  // Intimation Slip
   createIntimation(data: any): Observable<any> {
-    return this.http.post(this.createUrl, data);
+    return this.http.post(`${this.baseUrl}/api/tool-intimation/create`, data);
   }
 
   approveIntimation(data: any): Observable<any> {
-    return this.http.post(this.approveUrl, data);
+    return this.http.post(`${this.baseUrl}/api/tool-intimation/approve`, data);
   }
 
   getIntimationList(): Observable<any> {
-    return this.http.get(this.listUrl);
+    return this.http.get(`${this.baseUrl}/api/tool-intimation/list`);
+  }
+
+  // Scanner & Tool Info
+  getToolInfo(toolCode: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/get-toolinfo?tool=${toolCode}`);
+  }
+
+  checkInTool(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/tool-checkin`, data);
+  }
+
+  // Checklist
+  getChecklistTemplate(toolCode: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/tool-checklist?tool=${toolCode}`);
+  }
+
+  submitChecklist(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/tool-checklist/submit`, data);
+  }
+
+  // Action Update
+  submitActionUpdate(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/tool-action-update`, data);
   }
 }
