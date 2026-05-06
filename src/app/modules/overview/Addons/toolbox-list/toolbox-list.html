@@ -1,0 +1,51 @@
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <h2>Tool Box Details</h2>
+    <span>Total: {{ toolboxes.length }} Toolboxes</span>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid">
+    <div 
+      class="card"
+      *ngFor="let box of paginatedData"
+      [ngClass]="box.status"
+    >
+
+      <div class="title">{{ box.name }}</div>
+
+      <div class="image"></div>
+
+      <!-- STATUS DROPDOWN -->
+      <select [(ngModel)]="box.status" class="status-dropdown">
+        <option value="critical">Critical</option>
+        <option value="warning">Warning</option>
+        <option value="ok">OK</option>
+      </select>
+
+      <div class="footer">
+        <span class="type">{{ box.type }}</span>
+        <span class="count">200</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination">
+    <button (click)="prevPage()">‹</button>
+
+    <button 
+      *ngFor="let p of pages"
+      [class.active]="p === currentPage"
+      (click)="goToPage(p)"
+    >
+      {{ p }}
+    </button>
+
+    <button (click)="nextPage()">›</button>
+  </div>
+
+</div>

@@ -1,0 +1,96 @@
+/* PAGE */
+.page {
+  width: 100%;
+  padding: 20px;
+}
+
+/* HEADER */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* GRID → 5 x 3 layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 per row */
+  gap: 20px;
+}
+
+/* CARD BASE */
+.card {
+  border-radius: 12px;
+  padding: 12px;
+  background: #ffffff;
+  transition: 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* TITLE */
+.title {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* IMAGE PLACEHOLDER */
+.image {
+  height: 60px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 6px;
+}
+
+/* FOOTER */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+/* STATUS COLORS (MAIN LOGIC) */
+.card.critical {
+  background: #ff4d4f;
+  color: white;
+}
+
+.card.warning {
+  background: #f1c40f;
+  color: black;
+}
+
+.card.ok {
+  background: #4caf50;
+  color: white;
+}
+
+/* DROPDOWN */
+.status-dropdown {
+  width: 100%;
+  margin-top: 8px;
+  padding: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 6px 12px;
+  border: 1px solid red;
+  background: white;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  background: red;
+  color: white;
+}

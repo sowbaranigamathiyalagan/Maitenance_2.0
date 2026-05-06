@@ -1,0 +1,40 @@
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+/* SIDEBAR */
+app-sidebar {
+  width: 80px;
+  background: #eee;
+}
+
+/* MAIN AREA */
+.main {
+  flex: 1;              // ✅ this is enough
+  display: flex;        // ✅ for topbar + content layout
+  flex-direction: column;
+  
+}
+
+/* TOPBAR */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  padding:0 20px;
+  background: #f4f4f4;;
+  border-bottom: 1px solid #ddd;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 20px; 
+  background: #fafafa;
+}
+.title {
+  font-weight: bold;
+  color: red;
+}

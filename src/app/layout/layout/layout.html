@@ -1,0 +1,33 @@
+<div class="layout">
+
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+
+      <div class="left">
+        <span class="title">R-Maintenance 2.0</span>
+      </div>
+
+      <div class="right">
+        <p-button label="Slip" [raised]="true" severity="info" />
+        <span>📍 M03</span>
+        <span>🔔</span>
+        <span>🏠</span>
+        <span>👤</span>
+      </div>
+
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+</div>
