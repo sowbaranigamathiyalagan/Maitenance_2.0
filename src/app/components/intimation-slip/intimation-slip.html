@@ -13,7 +13,17 @@
         pInputText
         id="machineNumber"
         [(ngModel)]="formData.machineNumber"
-        placeholder=""
+        placeholder="Enter Machine Number"
+      />
+    </div>
+
+    <div class="field">
+      <label for="moldNumber">Mold Number</label>
+      <input
+        pInputText
+        id="moldNumber"
+        [(ngModel)]="formData.moldNumber"
+        placeholder="Enter Mold Number"
       />
     </div>
 
@@ -23,19 +33,18 @@
         pInputText
         id="moldName"
         [(ngModel)]="formData.moldName"
-        placeholder=""
+        placeholder="Enter Mold Name"
       />
     </div>
 
     <div class="field">
-      <label for="category">Category</label>
-      <p-select
-        id="category"
-        [options]="categories"
-        [(ngModel)]="formData.category"
-        optionLabel="label"
-        placeholder="Dropdown"
-      ></p-select>
+      <label for="timeDuration">Time Duration</label>
+      <input
+        pInputText
+        id="timeDuration"
+        [(ngModel)]="formData.timeDuration"
+        placeholder="Enter Duration (e.g. 4 months)"
+      />
     </div>
 
     <div class="field">
@@ -44,7 +53,7 @@
         pInputText
         id="materialName"
         [(ngModel)]="formData.materialName"
-        placeholder=""
+        placeholder="Enter Material Name"
       />
     </div>
 
@@ -55,7 +64,7 @@
         [options]="shifts"
         [(ngModel)]="formData.shift"
         optionLabel="label"
-        placeholder="Dropdown"
+        placeholder="Select Shift"
       ></p-select>
     </div>
 
@@ -66,7 +75,18 @@
         [options]="departments"
         [(ngModel)]="formData.department"
         optionLabel="label"
-        placeholder="Dropdown"
+        placeholder="Select Department"
+      ></p-select>
+    </div>
+
+    <div class="field">
+      <label for="category">Category</label>
+      <p-select
+        id="category"
+        [options]="categories"
+        [(ngModel)]="formData.category"
+        optionLabel="label"
+        placeholder="Select Category"
       ></p-select>
     </div>
 
@@ -76,7 +96,8 @@
         pTextarea
         id="problemDesc"
         [(ngModel)]="formData.problemDesc"
-        rows="5"
+        rows="4"
+        placeholder="Describe the problem observed..."
       ></textarea>
     </div>
   </div>
