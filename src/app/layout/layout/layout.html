@@ -14,7 +14,7 @@
       </div>
 
       <div class="right">
-        <p-button label="Slip" [raised]="true" severity="info" />
+        <p-button label="Slip" [raised]="true" severity="info" (click)="showSlip()" />
         <span>📍 M03</span>
         <span>🔔</span>
         <span>🏠</span>
@@ -29,5 +29,16 @@
     </div>
 
   </div>
+
+  <p-dialog
+    [(visible)]="visibleSlip"
+    [modal]="true"
+    [closable]="false"
+    [showHeader]="false"
+    [style]="{ width: '800px', border: 'none' }"
+    [contentStyle]="{ padding: '0', borderRadius: '12px', background: 'white' }"
+  >
+    <app-intimation-slip (onClose)="visibleSlip = false"></app-intimation-slip>
+  </p-dialog>
 
 </div>

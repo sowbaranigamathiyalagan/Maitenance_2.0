@@ -8,6 +8,7 @@
 .page-header {
   display: flex;
   justify-content: space-between;
+  color: #000;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -88,6 +89,7 @@
   border: 1px solid red;
   background: white;
   cursor: pointer;
+  color: #000;
 }
 
 .pagination button.active {
