@@ -15,8 +15,9 @@ import { Intimation as IntimationService } from '../../core/services/intimation'
 })
 export class Quality implements OnInit {
   activeTab: string = 'approve';
-  qualityData: any[] = [];
-  loading: boolean = true;
+  approveList: any[] = [];
+  awaitingList: any[] = [];
+  loading: boolean = false;
 
   constructor(
     private intimationService: IntimationService,
@@ -25,37 +26,68 @@ export class Quality implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.fetchData();
+    this.fetchApproveList();
+    this.fetchAwaitingList();
   }
 
-  fetchData() {
+  fetchApproveList() {
     this.loading = true;
     this.intimationService.getIntimationList().subscribe({
       next: (res) => {
-        this.qualityData = res.intimations || [];
+        this.approveList = res.intimations || [];
         this.loading = false;
       },
       error: (err) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to fetch intimation list.',
+          detail: 'Failed to fetch approve list.',
         });
         this.loading = false;
-        console.error('Error fetching list:', err);
+      },
+    });
+  }
+
+  fetchAwaitingList() {
+    this.loading = true;
+    this.intimationService.getQaApprovalList().subscribe({
+      next: (res) => {
+        this.awaitingList = res.intimations || [];
+        this.loading = false;
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch awaiting dispatch list.',
+        });
+        this.loading = false;
       },
     });
   }
 
   setTab(tab: string) {
     this.activeTab = tab;
+    if (tab === 'approve') this.fetchApproveList();
+    else this.fetchAwaitingList();
   }
 
-  approveRow(rowData: any) {
-    const payload = {
-      slip_id: rowData.id,
-      stage: 'PRE_QA',
-    };
+  approveRow(rowData: any, tab: string) {
+    let payload: any;
+    
+    if (tab === 'approve') {
+      payload = {
+        slip_id: rowData.id,
+        stage: 'PRE_QA',
+      };
+    } else {
+      payload = {
+        slip_id: rowData.id,
+        stage: 'FINAL_QA',
+        qa_status: 'APPROVED',
+        remarks: 'Parts OK'
+      };
+    }
 
     this.intimationService.approveIntimation(payload).subscribe({
       next: (res) => {
@@ -64,8 +96,8 @@ export class Quality implements OnInit {
           summary: 'Approved',
           detail: res.message || 'QA verified successfully.',
         });
-        // Refresh the list after approval
-        this.fetchData();
+        if (tab === 'approve') this.fetchApproveList();
+        else this.fetchAwaitingList();
       },
       error: (err) => {
         this.messageService.add({
@@ -73,7 +105,6 @@ export class Quality implements OnInit {
           summary: 'Error',
           detail: 'Failed to approve intimation.',
         });
-        console.error('Error approving intimation:', err);
       },
     });
   }

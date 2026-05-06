@@ -24,6 +24,10 @@ export class Intimation {
     return this.http.get(`${this.baseUrl}/api/tool-intimation/list`);
   }
 
+  getQaApprovalList(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/tool-intimation/qa`);
+  }
+
   // Scanner & Tool Info
   getToolInfo(toolCode: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/api/get-toolinfo?tool=${toolCode}`);
