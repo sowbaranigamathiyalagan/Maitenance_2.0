@@ -7,11 +7,21 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class Intimation {
-  private apiUrl = `${environment.apiUrl}/api/tool-intimation/create`;
+  private createUrl = `${environment.apiUrl}/api/tool-intimation/create`;
+  private approveUrl = `${environment.apiUrl}/api/tool-intimation/approve`;
+  private listUrl = `${environment.apiUrl}/api/tool-intimation/list`;
 
   constructor(private http: HttpClient) {}
 
   createIntimation(data: any): Observable<any> {
-    return this.http.post(this.apiUrl, data);
+    return this.http.post(this.createUrl, data);
+  }
+
+  approveIntimation(data: any): Observable<any> {
+    return this.http.post(this.approveUrl, data);
+  }
+
+  getIntimationList(): Observable<any> {
+    return this.http.get(this.listUrl);
   }
 }
