@@ -1,51 +1,73 @@
 <div class="page">
 
   <!-- HEADER -->
-  <div class="page-header">
-    <h2>Tool Box Details</h2>
-    <span>Total: {{ toolboxes.length }} Toolboxes</span>
+  <div class="page-header" *ngIf="!loading && !hasError && toolboxes.length > 0">
+    <span>Total: {{ toolboxes.length }} </span>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loader"></div>
+    <p>Loading tool information...</p>
+  </div>
+
+  <!-- NO DATA / ERROR STATE -->
+  <div class="empty-state" *ngIf="!loading && (hasError || toolboxes.length === 0)">
+    <img src="assets/illustrations/nodata.svg" alt="No data found">
+    <h3>{{ hasError ? 'Connection Error' : 'No Data Found' }}</h3>
+    <p>{{ hasError ? 'Unable to reach the server. Please check your connection.' : 'No tool status records are available at the moment.' }}</p>
+    <button class="retry-btn" (click)="fetchToolStatus()">
+       Retry
+    </button>
   </div>
 
   <!-- GRID -->
-  <div class="grid">
+  <div class="grid" *ngIf="!loading && !hasError && toolboxes.length > 0">
     <div 
       class="card"
       *ngFor="let box of paginatedData"
       [ngClass]="box.status"
     >
+      <div class="card-header">
+        <div class="title">{{ box.name }}</div>
+        <div class="status-indicator"></div>
+      </div>
 
-      <div class="title">{{ box.name }}</div>
+      <div class="image-container">
+        <img *ngIf="box.image" [src]="box.image" alt="tool image">
+        <div *ngIf="!box.image" class="placeholder-icon">🛠️</div>
+      </div>
 
-      <div class="image"></div>
-
-      <!-- STATUS DROPDOWN -->
-      <select [(ngModel)]="box.status" class="status-dropdown">
-        <option value="critical">Critical</option>
-        <option value="warning">Warning</option>
-        <option value="ok">OK</option>
-      </select>
+      <div class="card-content">
+        <div class="location">
+          <span class="label">Location:</span>
+          <span class="val">{{ box.location }}</span>
+        </div>
+      </div>
 
       <div class="footer">
-        <span class="type">{{ box.type }}</span>
-        <span class="count">200</span>
+        <span class="status-label">{{ box.status | uppercase }}</span>
+        <span class="count">{{ box.value }}</span>
       </div>
 
     </div>
   </div>
 
   <!-- PAGINATION -->
-  <div class="pagination">
-    <button (click)="prevPage()">‹</button>
+  <div class="pagination" *ngIf="!loading && !hasError && pages.length > 1">
+    <button (click)="prevPage()" [disabled]="currentPage === 1">‹</button>
 
-    <button 
-      *ngFor="let p of pages"
-      [class.active]="p === currentPage"
-      (click)="goToPage(p)"
-    >
-      {{ p }}
-    </button>
+    <div class="page-numbers">
+      <button 
+        *ngFor="let p of pages"
+        [class.active]="p === currentPage"
+        (click)="goToPage(p)"
+      >
+        {{ p }}
+      </button>
+    </div>
 
-    <button (click)="nextPage()">›</button>
+    <button (click)="nextPage()" [disabled]="currentPage === pages.length">›</button>
   </div>
 
 </div>

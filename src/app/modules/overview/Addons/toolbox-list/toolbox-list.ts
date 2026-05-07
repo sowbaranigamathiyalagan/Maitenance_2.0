@@ -1,31 +1,41 @@
-  import { Component, OnInit  } from '@angular/core';
-import { CommonModule } from '@angular/common'; // ✅ ADD THIS
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Intimation as IntimationService } from '../../../../core/services/intimation';
 
 @Component({
   selector: 'app-toolbox-list',
   standalone: true,
-  imports: [CommonModule,FormsModule], // ✅ ADD THIS
+  imports: [CommonModule, FormsModule],
   templateUrl: './toolbox-list.html',
   styleUrls: ['./toolbox-list.scss']
 })
 export class ToolboxListComponent implements OnInit {
-   toolboxes = [
-    { id: 12, name: 'RBM - 12', status: 'critical', type: 'IMM' },
-    { id: 13, name: 'RBM - 13', status: 'ok', type: 'Store Room' },
-    { id: 14, name: 'RBM - 14', status: 'critical', type: 'Tool Room' },
-    { id: 15, name: 'RBM - 15', status: 'ok', type: 'Store Room' },
-    { id: 16, name: 'RBM - 16', status: 'critical', type: 'Tool Room' },
-    { id: 17, name: 'RBM - 17', status: 'warning', type: 'IMM' },
-    { id: 18, name: 'RBM - 18', status: 'warning', type: 'IMM' },
-    { id: 19, name: 'RBM - 19', status: 'ok', type: 'Tool Room' },
-    { id: 20, name: 'RBM - 20', status: 'warning', type: 'IMM' },
-    { id: 21, name: 'RBM - 21', status: 'critical', type: 'Tool Room' }
-  ];
-   ngOnInit() {
-    
+  toolboxes: any[] = [];
+  loading: boolean = false;
+  currentPage = 1;
+  pageSize = 15;
+
+  constructor(private intimationService: IntimationService) {}
+
+  ngOnInit() {
+    this.fetchToolStatus();
   }
-  // ADD STATUS LOGIC HERE
+
+  fetchToolStatus() {
+    this.loading = true;
+    this.intimationService.getToolStatus().subscribe({
+      next: (res) => {
+        this.toolboxes = res.tooldata || [];
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to fetch tool status', err);
+        this.loading = false;
+      }
+    });
+  }
+
   getStatusClass(status: string) {
     return {
       critical: status === 'critical',
@@ -34,33 +44,30 @@ export class ToolboxListComponent implements OnInit {
     };
   }
 
-  currentPage = 1;
-pageSize = 15;
-
-get paginatedData() {
-  const start = (this.currentPage - 1) * this.pageSize;
-  return this.toolboxes.slice(start, start + this.pageSize);
-}
-
-get pages() {
-  return Array(Math.ceil(this.toolboxes.length / this.pageSize))
-    .fill(0)
-    .map((_, i) => i + 1);
-}
-
-goToPage(page: number) {
-  this.currentPage = page;
-}
-
-nextPage() {
-  if (this.currentPage < this.pages.length) {
-    this.currentPage++;
+  get paginatedData() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.toolboxes.slice(start, start + this.pageSize);
   }
-}
 
-prevPage() {
-  if (this.currentPage > 1) {
-    this.currentPage--;
+  get pages() {
+    return Array(Math.ceil(this.toolboxes.length / this.pageSize))
+      .fill(0)
+      .map((_, i) => i + 1);
   }
-}
+
+  goToPage(page: number) {
+    this.currentPage = page;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.pages.length) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
 }
