@@ -91,7 +91,7 @@ export class Scanner {
     const payload = {
       tool: this.toolInfo.tool_code,
       session_id: this.toolInfo.session_id,
-      slip_id: this.toolInfo.intimation_id,
+      slip_id: this.toolInfo.slip_id,
     };
 
     this.intimationService.checkInTool(payload).subscribe({

@@ -78,8 +78,6 @@ export class IntimationSlip {
       'machineNumber',
       'moldNumber',
       'moldName',
-      'shotsProduced',
-      'standardShots',
       'timeDuration',
       'materialName',
       'shift',

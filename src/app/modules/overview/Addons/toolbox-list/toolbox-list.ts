@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Intimation as IntimationService } from '../../../../core/services/intimation';
@@ -17,7 +17,11 @@ export class ToolboxListComponent implements OnInit {
   currentPage = 1;
   pageSize = 15;
 
-  constructor(private intimationService: IntimationService) {}
+  constructor(
+    private intimationService: IntimationService,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
+  ) {}
 
   ngOnInit() {
     this.fetchToolStatus();
@@ -28,14 +32,20 @@ export class ToolboxListComponent implements OnInit {
     this.hasError = false;
     this.intimationService.getToolStatus().subscribe({
       next: (res) => {
-        this.toolboxes = res.tooldata || [];
-        this.loading = false;
-        this.hasError = false;
+        this.zone.run(() => {
+          this.toolboxes = res.tooldata || [];
+          this.loading = false;
+          this.hasError = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
         console.error('Failed to fetch tool status', err);
-        this.loading = false;
-        this.hasError = true;
+        this.zone.run(() => {
+          this.loading = false;
+          this.hasError = true;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
