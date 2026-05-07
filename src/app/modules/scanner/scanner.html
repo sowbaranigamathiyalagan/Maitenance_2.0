@@ -6,10 +6,12 @@
     <div class="input-group">
       <input
         pInputText
+        #scannerInputField
         id="scannerInput"
         [(ngModel)]="scannerInput"
         placeholder="Enter Tool Code"
         (keyup.enter)="onSend()"
+        autofocus
       />
       <p-button
         [label]="loading ? 'Searching...' : 'Send'"

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -25,7 +25,9 @@ import { Intimation as IntimationService } from '../../core/services/intimation'
   templateUrl: './scanner.html',
   styleUrl: './scanner.scss',
 })
-export class Scanner {
+export class Scanner implements AfterViewInit {
+  @ViewChild('scannerInputField') scannerInputField!: ElementRef;
+
   scannerInput: string = '';
   showDetails: boolean = false;
   loading: boolean = false;
@@ -51,6 +53,18 @@ export class Scanner {
     private messageService: MessageService
   ) {
     this.actionData.broken_parts = [this.createNewBrokenPart()];
+  }
+
+  ngAfterViewInit() {
+    this.focusInput();
+  }
+
+  focusInput() {
+    if (this.scannerInputField) {
+      setTimeout(() => {
+        this.scannerInputField.nativeElement.focus();
+      }, 0);
+    }
   }
 
   onSend() {
@@ -83,6 +97,7 @@ export class Scanner {
         });
         this.showDetails = false;
         this.loading = false;
+        this.focusInput();
       },
     });
   }
@@ -237,6 +252,7 @@ export class Scanner {
       corrective_action: '',
       broken_parts: [this.createNewBrokenPart()],
     };
+    this.focusInput();
   }
 
   downloadChecksheet() {
