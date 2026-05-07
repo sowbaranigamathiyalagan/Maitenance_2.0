@@ -117,7 +117,7 @@
   justify-content: center;
 
   .main-illustration {
-    width: 100%;
+    width: 70%;
     height: auto;
     filter: drop-shadow(0 30px 60px rgba(0,0,0,0.3));
     animation: floatHero 5s ease-in-out infinite;
@@ -411,4 +411,8 @@
   .form-header h2 {
     font-size: 28px;
   }
+}
+
+.space{
+  margin-left: 1rem;
 }

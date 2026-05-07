@@ -9,7 +9,7 @@
     
     <div class="panel-content">
       <div class="brand-box">
-        <h1 class="main-title">R-MAINTENANCE <span>2.0</span></h1>
+        <h1 class="main-title">R-MAINTENANCE <span class="space"><span>2.0</span></span></h1>
         <p class="main-tagline">Precision Engineering. Intelligent Maintenance.</p>
       </div>
       
@@ -23,8 +23,8 @@
 
       <div class="panel-footer">
         <div class="status-indicator">
-          <span class="dot"></span>
-          <span>System Online: v2.4.0</span>
+          <!-- <span class="dot"></span> -->
+          <!-- <span>System Online: v2.4.0</span> -->
         </div>
       </div>
     </div>
@@ -66,11 +66,11 @@
             <input type="checkbox" />
             <span>Remember me</span>
           </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <!-- <a href="#" class="forgot-link">Forgot password?</a> -->
         </div>
 
         <button type="submit" class="btn-submit" [disabled]="loading">
-          <span class="btn-text">{{ loading ? 'Authenticating...' : 'Authenticate' }}</span>
+          <span class="btn-text">{{ loading ? 'Logging in...' : 'Login' }}</span>
           <div class="btn-shimmer" *ngIf="!loading"></div>
           <svg *ngIf="!loading" class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <line x1="5" y1="12" x2="19" y2="12"></line>

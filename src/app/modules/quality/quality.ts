@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -22,28 +22,43 @@ export class Quality implements OnInit {
   constructor(
     private intimationService: IntimationService,
     private messageService: MessageService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private cdr: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   ngOnInit() {
-    this.fetchApproveList();
-    this.fetchAwaitingList();
+    this.refreshData();
+  }
+
+  refreshData() {
+    if (this.activeTab === 'approve') {
+      this.fetchApproveList();
+    } else {
+      this.fetchAwaitingList();
+    }
   }
 
   fetchApproveList() {
     this.loading = true;
     this.intimationService.getIntimationList().subscribe({
       next: (res) => {
-        this.approveList = res.intimations || [];
-        this.loading = false;
+        this.zone.run(() => {
+          this.approveList = [...(res.intimations || [])];
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch approve list.',
+        this.zone.run(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch approve list.',
+          });
+          this.loading = false;
+          this.cdr.detectChanges();
         });
-        this.loading = false;
       },
     });
   }
@@ -52,24 +67,29 @@ export class Quality implements OnInit {
     this.loading = true;
     this.intimationService.getQaApprovalList().subscribe({
       next: (res) => {
-        this.awaitingList = res.intimations || [];
-        this.loading = false;
+        this.zone.run(() => {
+          this.awaitingList = [...(res.intimations || [])];
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch awaiting dispatch list.',
+        this.zone.run(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch awaiting dispatch list.',
+          });
+          this.loading = false;
+          this.cdr.detectChanges();
         });
-        this.loading = false;
       },
     });
   }
 
   setTab(tab: string) {
     this.activeTab = tab;
-    if (tab === 'approve') this.fetchApproveList();
-    else this.fetchAwaitingList();
+    this.refreshData();
   }
 
   approveRow(rowData: any, tab: string) {

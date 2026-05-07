@@ -21,12 +21,13 @@ export class AuthService {
   login(payload: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/loginvalidation/`, payload).pipe(
       tap((response: any) => {
-        if (response && response.valid === 'Email ID and Password matches') {
-          // Save Access Token for Interceptor
-          if (response.access) {
+        console.log(response)
+        if (response && response.validationstring === 'Email ID and Password matches') {
+          // Save Access Token (using sessionID as token for interceptor)
+          if (response.sessionID) {
+            this.saveToken(response.sessionID);
             this.saveToken(response.access);
           }
-
           // Save Cookies
           this.cookieService.set('Plantname', response.udPlantname);
           this.cookieService.set('Username', response.udusername);
@@ -35,18 +36,20 @@ export class AuthService {
           this.cookieService.set('Lastname', response.udlastName);
           this.cookieService.set('Usertype', response.udtype);
           this.cookieService.set('location', response.udlocation);
+          localStorage.setItem('access',response.access);
 
           // Save Session Storage
           sessionStorage.setItem('udusername', response.udusername);
           sessionStorage.setItem('udsession_id', response.sessionID);
           sessionStorage.setItem('udPlantname', response.udPlantname);
           sessionStorage.setItem('udemail', response.udemail);
+          sessionStorage.setItem('access', response.access);
 
           // Save to Local Storage for fallback/guards
           this.saveUser(response.udusername);
         } else {
           // If the API returns 200 but validation fails
-          throw new Error(response?.valid || 'Invalid credentials');
+          throw new Error(response?.validationstring || 'Invalid credentials');
         }
       })
     );
@@ -55,11 +58,11 @@ export class AuthService {
 
 
   saveToken(token: string): void {
-    localStorage.setItem('access_token', token);
+    sessionStorage.setItem('access', token);
   }
 
   getToken(): string | null {
-    return localStorage.getItem('access_token');
+    return sessionStorage.getItem('access');
   }
 
   saveUser(username: string): void {

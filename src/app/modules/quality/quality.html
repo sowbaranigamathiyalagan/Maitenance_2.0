@@ -1,12 +1,14 @@
 <div class="quality-page">
   <div class="tabs">
     <button
+      class="tab-btn"
       [class.active]="activeTab === 'approve'"
       (click)="setTab('approve')"
     >
       Approve / Review
     </button>
     <button
+      class="tab-btn"
       [class.active]="activeTab === 'awaiting'"
       (click)="setTab('awaiting')"
     >
@@ -14,8 +16,9 @@
     </button>
   </div>
 
-  <div class="table-container">
+  <div class="table-card">
     <p-table
+      class="custom-table"
       [value]="activeTab === 'approve' ? approveList : awaitingList"
       [loading]="loading"
       [rows]="10"

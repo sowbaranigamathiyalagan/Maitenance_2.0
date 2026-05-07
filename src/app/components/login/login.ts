@@ -41,7 +41,13 @@ export class LoginComponent {
     this.authService.login(payload).subscribe({
       next: (res) => {
         this.loading = false;
+        console.log("login success")
         this.router.navigate(['/overview']);
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Success', 
+          detail: 'Login Success'
+        });
       },
       error: (err) => {
         this.loading = false;
@@ -55,4 +61,4 @@ export class LoginComponent {
 
     });
   }
-}
+}
