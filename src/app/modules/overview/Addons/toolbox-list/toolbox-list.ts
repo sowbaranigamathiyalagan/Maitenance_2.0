@@ -13,6 +13,7 @@ import { Intimation as IntimationService } from '../../../../core/services/intim
 export class ToolboxListComponent implements OnInit {
   toolboxes: any[] = [];
   loading: boolean = false;
+  hasError: boolean = false;
   currentPage = 1;
   pageSize = 15;
 
@@ -24,14 +25,17 @@ export class ToolboxListComponent implements OnInit {
 
   fetchToolStatus() {
     this.loading = true;
+    this.hasError = false;
     this.intimationService.getToolStatus().subscribe({
       next: (res) => {
         this.toolboxes = res.tooldata || [];
         this.loading = false;
+        this.hasError = false;
       },
       error: (err) => {
         console.error('Failed to fetch tool status', err);
         this.loading = false;
+        this.hasError = true;
       }
     });
   }
