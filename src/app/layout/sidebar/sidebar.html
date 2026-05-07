@@ -16,19 +16,19 @@
       <img src="assets/sidebar/scanner.svg" />
     </div>
 
-    <div class="menu-item" routerLink="/reports" routerLinkActive="active" pTooltip="Reports" tooltipPosition="right">
+    <!-- <div class="menu-item" routerLink="/reports" routerLinkActive="active" pTooltip="Reports" tooltipPosition="right">
       <img src="assets/sidebar/reports.svg" />
     </div>
 
     <div class="menu-item" routerLink="/settings" routerLinkActive="active" pTooltip="Settings" tooltipPosition="right">
-      <img src="assets/sidebar/settings.svg" />
-    </div>
+      <img src="assets/sidebar/settings.svg" /> -->
+    <!-- </div> -->
 
-    <div class="menu-item" routerLink="/quality" routerLinkActive="active" pTooltip="Quality" tooltipPosition="right">
+    <div class="menu-item" *ngIf="isQA" routerLink="/quality" routerLinkActive="active" pTooltip="Quality" tooltipPosition="right">
       <img src="assets/sidebar/quality.svg" />
     </div>
 
-    <div class="menu-item" routerLink="/hod-approval" routerLinkActive="active" pTooltip="HOD Approval" tooltipPosition="right">
+    <div class="menu-item" *ngIf="isIMS" routerLink="/hod-approval" routerLinkActive="active" pTooltip="HOD Approval" tooltipPosition="right">
       <img src="assets/sidebar/img.svg" />
     </div>
 
