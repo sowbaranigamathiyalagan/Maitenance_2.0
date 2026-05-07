@@ -50,4 +50,9 @@ export class Intimation {
   submitActionUpdate(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/api/tool-action-update`, data);
   }
+
+  // Overview / Tool Status
+  getToolStatus(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/tool-status`);
+  }
 }
