@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,11 +14,25 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class SidebarComponent implements OnInit {
   userType: string = '';
+  userName: string = '';
+  showProfilePopup: boolean = false;
 
-  constructor(private cookieService: CookieService) {}
+  constructor(
+    private cookieService: CookieService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.userType = this.cookieService.get('Usertype') || '';
+    this.userName = this.cookieService.get('Username') || 'User';
+  }
+
+  toggleProfile() {
+    this.showProfilePopup = !this.showProfilePopup;
+  }
+
+  logout() {
+    this.authService.logout();
   }
 
   get isQA() {
@@ -25,7 +40,7 @@ export class SidebarComponent implements OnInit {
   }
 
   get isIMS() {
-    return this.userType === 'IMS' || this.isAdmin;
+    return this.userType === 'IMG' || this.isAdmin;
   }
 
   get isAdmin() {

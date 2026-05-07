@@ -34,4 +34,24 @@
 
   </div>
 
+  <!-- Profile Section -->
+  <div class="profile-section">
+    <div class="menu-item profile-trigger" (click)="toggleProfile()" pTooltip="Profile" tooltipPosition="right">
+      <img src="assets/sidebar/user.svg" />
+    </div>
+
+    <!-- Profile Popup -->
+    <div class="profile-popup" *ngIf="showProfilePopup">
+      <div class="user-info">
+        <p class="name">{{ userName }}</p>
+        <p class="type">{{ userType }}</p>
+      </div>
+      <div class="divider"></div>
+      <button class="logout-btn" (click)="logout()">
+        <i class="pi pi-sign-out"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+
 </div>

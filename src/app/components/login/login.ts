@@ -51,7 +51,15 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        const errorMessage = err.error?.message || err.message || 'Invalid email or password';
+        console.error("Login error:", err);
+        
+        // Extract the most descriptive error message possible
+        const errorMessage = 
+          err.error?.validationstring || 
+          err.error?.message || 
+          err.message || 
+          'Invalid email or password';
+
         this.messageService.add({ 
           severity: 'error', 
           summary: 'Login Failed', 
