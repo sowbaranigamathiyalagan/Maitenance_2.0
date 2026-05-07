@@ -55,4 +55,14 @@ export class Intimation {
   getToolStatus(): Observable<any> {
     return this.http.get(`${this.baseUrl}/api/tool-status`);
   }
+
+  // IMG Approval List
+  getImgApprovalList(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/tool-intimation/img`);
+  }
+
+  // HOD Approval Action
+  approveHOD(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/tool-intimation/approve`, data);
+  }
 }
