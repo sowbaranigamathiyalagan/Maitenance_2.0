@@ -148,7 +148,7 @@ export class Scanner {
 
   submitChecklist() {
     const payload = {
-      slip_id: this.toolInfo.intimation_id,
+      slip_id: this.toolInfo.slip_id,
       checklist: this.checklistData.check_items.map((item: any) => ({
         item_name: item.check_item,
         observation: item.observation,
@@ -202,7 +202,7 @@ export class Scanner {
 
   submitActionUpdate() {
     const payload = {
-      slip_id: this.toolInfo.intimation_id,
+      slip_id: this.toolInfo.slip_id,
       ...this.actionData,
     };
 

@@ -16,6 +16,7 @@ export class ToolboxListComponent implements OnInit {
   hasError: boolean = false;
   currentPage = 1;
   pageSize = 15;
+  filterStatus: string = 'all';
 
   constructor(
     private intimationService: IntimationService,
@@ -50,6 +51,19 @@ export class ToolboxListComponent implements OnInit {
     });
   }
 
+  onFilterChange() {
+    this.currentPage = 1;
+    this.cdr.detectChanges();
+  }
+
+  get filteredToolboxes() {
+    if (!this.toolboxes) return [];
+    if (this.filterStatus === 'all') return this.toolboxes;
+    return this.toolboxes.filter(box => 
+      box.status && box.status.toLowerCase() === this.filterStatus.toLowerCase()
+    );
+  }
+
   getStatusClass(status: string) {
     return {
       critical: status === 'critical',
@@ -59,12 +73,14 @@ export class ToolboxListComponent implements OnInit {
   }
 
   get paginatedData() {
+    const data = this.filteredToolboxes;
     const start = (this.currentPage - 1) * this.pageSize;
-    return this.toolboxes.slice(start, start + this.pageSize);
+    return data.slice(start, start + this.pageSize);
   }
 
   get pages() {
-    return Array(Math.ceil(this.toolboxes.length / this.pageSize))
+    const totalItems = this.filteredToolboxes.length;
+    return Array(Math.ceil(totalItems / this.pageSize))
       .fill(0)
       .map((_, i) => i + 1);
   }

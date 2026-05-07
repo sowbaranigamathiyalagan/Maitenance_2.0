@@ -2,7 +2,17 @@
 
   <!-- HEADER -->
   <div class="page-header" *ngIf="!loading && !hasError && toolboxes.length > 0">
-    <span>Total: {{ toolboxes.length }} </span>
+    <span>Total Tools: {{ toolboxes.length }} (Showing: {{ filteredToolboxes.length }})</span>
+    
+    <div class="filter-controls">
+      <label for="statusFilter">Status Filter:</label>
+      <select id="statusFilter" [(ngModel)]="filterStatus" (change)="onFilterChange()">
+        <option value="all">All Status</option>
+        <option value="ok">OK</option>
+        <option value="critical">Critical</option>
+        <option value="warning">Warning</option>
+      </select>
+    </div>
   </div>
 
   <!-- LOADING STATE -->
