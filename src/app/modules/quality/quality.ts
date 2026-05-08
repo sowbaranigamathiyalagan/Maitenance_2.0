@@ -2,14 +2,17 @@ import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { TextareaModule } from 'primeng/textarea';
+import { FormsModule } from '@angular/forms';
 import { SharedModule, MessageService } from 'primeng/api';
 import { Intimation as IntimationService } from '../../core/services/intimation';
 
 @Component({
   selector: 'app-quality',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, SharedModule],
-  providers: [DatePipe],
+  imports: [CommonModule, TableModule, ButtonModule, DialogModule, TextareaModule, FormsModule, SharedModule],
+  providers: [DatePipe, MessageService],
   templateUrl: './quality.html',
   styleUrl: './quality.scss',
 })
@@ -18,6 +21,13 @@ export class Quality implements OnInit {
   approveList: any[] = [];
   awaitingList: any[] = [];
   loading: boolean = false;
+
+  // Remarks Popup
+  showRemarksPopup: boolean = false;
+  approvalRemarks: string = '';
+  selectedRow: any = null;
+  selectedTab: string = '';
+  approvalStatus: 'APPROVED' | 'REJECTED' = 'APPROVED';
 
   constructor(
     private intimationService: IntimationService,
@@ -92,7 +102,19 @@ export class Quality implements OnInit {
     this.refreshData();
   }
 
-  approveRow(rowData: any, tab: string) {
+  approveRow(rowData: any, tab: string, status: 'APPROVED' | 'REJECTED' = 'APPROVED') {
+    if (tab === 'awaiting') {
+      this.selectedRow = rowData;
+      this.selectedTab = tab;
+      this.approvalStatus = status;
+      this.approvalRemarks = status === 'APPROVED' ? 'Parts OK' : 'Parts Rejected';
+      this.showRemarksPopup = true;
+    } else {
+      this.confirmApproval(rowData, tab, '', 'APPROVED');
+    }
+  }
+
+  confirmApproval(rowData: any, tab: string, remarks: string, status: 'APPROVED' | 'REJECTED') {
     let payload: any;
     
     if (tab === 'approve') {
@@ -104,26 +126,36 @@ export class Quality implements OnInit {
       payload = {
         slip_id: rowData.id,
         stage: 'FINAL_QA',
-        qa_status: 'APPROVED',
-        remarks: 'Parts OK'
+        qa_status: status,
+        remarks: remarks || (status === 'APPROVED' ? 'Parts OK' : 'Parts Rejected')
       };
     }
 
+    this.loading = true;
     this.intimationService.approveIntimation(payload).subscribe({
       next: (res) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Approved',
-          detail: res.message || 'QA verified successfully.',
+        this.zone.run(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: status === 'APPROVED' ? 'Approved' : 'Rejected',
+            detail: res.message || `QA ${status.toLowerCase()} successfully.`,
+          });
+          this.showRemarksPopup = false;
+          this.loading = false;
+          if (tab === 'approve') this.fetchApproveList();
+          else this.fetchAwaitingList();
+          this.cdr.detectChanges();
         });
-        if (tab === 'approve') this.fetchApproveList();
-        else this.fetchAwaitingList();
       },
       error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to approve intimation.',
+        this.zone.run(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `Failed to ${status.toLowerCase()} intimation.`,
+          });
+          this.loading = false;
+          this.cdr.detectChanges();
         });
       },
     });

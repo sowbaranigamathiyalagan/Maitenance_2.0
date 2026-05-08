@@ -5,11 +5,16 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { TextareaModule } from 'primeng/textarea';
+import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-hod-approval',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, TooltipModule],
+  imports: [CommonModule, TableModule, ButtonModule, TagModule, TooltipModule, DialogModule, TextareaModule, FormsModule],
+  providers: [MessageService],
   templateUrl: './hod-approval.html',
   styleUrl: './hod-approval.scss',
 })
@@ -17,8 +22,14 @@ export class HodApproval implements OnInit {
   approvalList: any[] = [];
   loading: boolean = false;
 
+  // Remarks Popup
+  showRemarksPopup: boolean = false;
+  approvalRemarks: string = '';
+  selectedItem: any = null;
+
   constructor(
     private intimationService: Intimation,
+    private messageService: MessageService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone
   ) {}
@@ -48,21 +59,41 @@ export class HodApproval implements OnInit {
   }
 
   approveItem(item: any) {
+    this.selectedItem = item;
+    this.approvalRemarks = 'Approved for QA verification';
+    this.showRemarksPopup = true;
+  }
+
+  confirmApproval() {
+    if (!this.selectedItem) return;
+
     const payload = {
-      slip_id: item.id,
+      slip_id: this.selectedItem.id,
       stage: 'HOD',
-      remarks: 'Approved for QA verification'
+      remarks: this.approvalRemarks || 'Approved for QA verification'
     };
 
     this.loading = true;
     this.intimationService.approveHOD(payload).subscribe({
       next: (res) => {
-        console.log('Approved successfully', res);
-        this.fetchApprovalList();
+        this.zone.run(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Approved',
+            detail: 'HOD Approval successful'
+          });
+          this.showRemarksPopup = false;
+          this.fetchApprovalList();
+        });
       },
       error: (err) => {
         console.error('Error approving item', err);
         this.zone.run(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to approve item'
+          });
           this.loading = false;
           this.cdr.detectChanges();
         });

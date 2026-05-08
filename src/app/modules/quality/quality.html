@@ -50,15 +50,27 @@
           </td>
           <td>{{ item.problem_observed }}</td>
           <td>{{ item.date_created | date: 'dd/MM/yyyy HH:mm' }}</td>
-          <td>
-            @if (item.status === 'REQUESTED' || item.status === 'IN_PROGRESS') {
-              <p-button
-                label="Approve"
-                icon="pi pi-check"
-                class="approve-btn"
-                (click)="approveRow(item, activeTab)"
-              ></p-button>
-            }
+          <td class="action-cell">
+            <div class="action-buttons" style="display: flex; gap: 8px;">
+              @if (item.status === 'REQUESTED' || item.status === 'IN_PROGRESS') {
+                <p-button
+                  label="Approve"
+                  icon="pi pi-check"
+                  class="approve-btn"
+                  (click)="approveRow(item, activeTab, 'APPROVED')"
+                ></p-button>
+
+                @if (activeTab === 'awaiting') {
+                  <p-button
+                    label="Reject"
+                    icon="pi pi-times"
+                    severity="danger"
+                    class="reject-btn"
+                    (click)="approveRow(item, activeTab, 'REJECTED')"
+                  ></p-button>
+                }
+              }
+            </div>
           </td>
         </tr>
       </ng-template>
@@ -69,4 +81,45 @@
       </ng-template>
     </p-table>
   </div>
+
+  <!-- REMARKS POPUP -->
+  <p-dialog 
+    [(visible)]="showRemarksPopup" 
+    [header]="(approvalStatus === 'APPROVED' ? 'QA Approval' : 'QA Rejection') + ' Remarks - ' + (selectedRow?.tool_code || '')" 
+    [modal]="true" 
+    [style]="{ width: '450px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="remarks-container" style="padding-top: 1rem;">
+      <div class="field" style="margin-bottom: 1.5rem;">
+        <label for="remarks" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #444;">Remarks</label>
+        <textarea 
+          id="remarks" 
+          pTextarea 
+          [(ngModel)]="approvalRemarks" 
+          rows="4" 
+          style="width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px;"
+          [placeholder]="approvalStatus === 'APPROVED' ? 'Enter approval remarks...' : 'Enter rejection reason...'"
+        ></textarea>
+      </div>
+      
+      <div class="dialog-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 1rem;">
+        <p-button 
+          label="Cancel" 
+          icon="pi pi-times" 
+          [text]="true" 
+          severity="secondary" 
+          (click)="showRemarksPopup = false"
+        ></p-button>
+        <p-button 
+          [label]="approvalStatus === 'APPROVED' ? 'Approve' : 'Reject'" 
+          [icon]="approvalStatus === 'APPROVED' ? 'pi pi-check' : 'pi pi-times'" 
+          [severity]="approvalStatus === 'APPROVED' ? 'success' : 'danger'" 
+          (click)="confirmApproval(selectedRow, selectedTab, approvalRemarks, approvalStatus)"
+          [loading]="loading"
+        ></p-button>
+      </div>
+    </div>
+  </p-dialog>
 </div>

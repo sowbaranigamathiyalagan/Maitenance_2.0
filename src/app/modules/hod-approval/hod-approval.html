@@ -58,4 +58,45 @@
       </ng-template>
     </p-table>
   </div>
+
+  <!-- REMARKS POPUP -->
+  <p-dialog 
+    [(visible)]="showRemarksPopup" 
+    [header]="'HOD Approval Remarks - ' + (selectedItem?.tool_code || '')" 
+    [modal]="true" 
+    [style]="{ width: '450px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <div class="remarks-container" style="padding-top: 1rem;">
+      <div class="field" style="margin-bottom: 1.5rem;">
+        <label for="remarks" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #444;">Remarks</label>
+        <textarea 
+          id="remarks" 
+          pTextarea 
+          [(ngModel)]="approvalRemarks" 
+          rows="4" 
+          style="width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px;"
+          placeholder="Enter approval remarks..."
+        ></textarea>
+      </div>
+      
+      <div class="dialog-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 1rem;">
+        <p-button 
+          label="Cancel" 
+          icon="pi pi-times" 
+          [text]="true" 
+          severity="secondary" 
+          (click)="showRemarksPopup = false"
+        ></p-button>
+        <p-button 
+          label="Approve" 
+          icon="pi pi-check" 
+          severity="success" 
+          (click)="confirmApproval()"
+          [loading]="loading"
+        ></p-button>
+      </div>
+    </div>
+  </p-dialog>
 </div>
