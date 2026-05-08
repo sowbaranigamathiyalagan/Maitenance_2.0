@@ -1,0 +1,201 @@
+<div class="scanner-page">
+  <h1 class="title">Scanner</h1>
+
+  <div class="input-section">
+    <label for="scannerInput">Scanner input:</label>
+    <div class="input-group">
+      <input
+        pInputText
+        #scannerInputField
+        id="scannerInput"
+        [(ngModel)]="scannerInput"
+        placeholder="Enter Tool Code"
+        (keyup.enter)="onSend()"
+        autofocus
+      />
+      <p-button
+        [label]="loading ? 'Searching...' : 'Send'"
+        [icon]="loading ? 'pi pi-spin pi-spinner' : 'pi pi-send'"
+        [disabled]="loading"
+        class="send-btn"
+        (click)="onSend()"
+      ></p-button>
+    </div>
+  </div>
+
+  @if (showDetails && toolInfo) {
+    <div class="details-card">
+      <div class="tool-header">
+        <span class="label">Tool Name :</span>
+        <span class="value">{{ toolInfo.tool_code }}</span>
+      </div>
+
+      <div class="image-container">
+        <img [src]="toolInfo.image_url" alt="Tool Image" />
+        <p class="tool-label">{{ toolInfo.tool_name }}</p>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-item">
+            <span class="label">Part Name :</span>
+            <span class="value">{{ toolInfo.toolName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Total Shots :</span>
+            <span class="value">{{ toolInfo.total_shots }}</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-row">
+          <div class="info-item">
+            <span class="label">Last PM Date :</span>
+            <span class="value">{{ toolInfo.last_pm_date | date: 'dd/MM/yy' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Current Status :</span>
+            <span class="value">{{ toolInfo.current_status }}</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-row">
+          <div class="info-item">
+            <span class="label">MIS Status :</span>
+            <span class="value">{{ toolInfo.slip_status}}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Action :</span>
+            <span class="value">{{ toolInfo.suggested_action }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      @if (toolInfo.suggested_action === 'CHECK_IN') {
+        <p-button
+          [label]="toolInfo.action_label || 'Check In'"
+          icon="pi pi-sign-in"
+          class="action-btn checkin"
+          (click)="onCheckIn()"
+        ></p-button>
+      } @else if (toolInfo.suggested_action === 'CHECK_OUT') {
+        <p-button
+          [label]="toolInfo.action_label || 'Check Out'"
+          icon="pi pi-sign-out"
+          class="action-btn checkout"
+          (click)="onCheckOut()"
+        ></p-button>
+      }
+    </div>
+  }
+
+  <!-- CHECKLIST MODAL -->
+  <p-dialog
+    [(visible)]="showChecklistModal"
+    [header]="'Checklist - ' + (toolInfo?.tool_code || '')"
+    [modal]="true"
+    [style]="{ width: '800px' }"
+  >
+    <div class="checklist-container">
+      <div class="checklist-header">
+        <span class="title">Check Items</span>
+        <div class="header-options">
+          <span>OK</span>
+          <span>NOT OK</span>
+        </div>
+      </div>
+
+      <div class="checklist-items">
+        @if (checklistData && checklistData.check_items) {
+          @for (item of checklistData.check_items; track $index) {
+            <div class="checklist-row">
+              <div class="item-info">
+                <span class="name">{{ item.check_item }}</span>
+                @if (checklistSource === 'PREVIOUS_SESSION') {
+                  <div class="edit-fields">
+                    <input pInputText [(ngModel)]="item.observation" placeholder="Observation" />
+                    <input pInputText [(ngModel)]="item.remarks" placeholder="Remarks" />
+                  </div>
+                }
+              </div>
+              <div class="item-options">
+                <p-radioButton
+                  [(ngModel)]="item.observation"
+                  [name]="'obs_' + $index"
+                  value="OK"
+                  [disabled]="checklistSource === 'PREVIOUS_SESSION'"
+                ></p-radioButton>
+                <p-radioButton
+                  [(ngModel)]="item.observation"
+                  [name]="'obs_' + $index"
+                  value="NOT_OK"
+                  [disabled]="checklistSource === 'PREVIOUS_SESSION'"
+                ></p-radioButton>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="modal-footer">
+        <p-button label="Submit Checklist" (click)="submitChecklist()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- ACTION UPDATE MODAL -->
+  <p-dialog
+    [(visible)]="showActionModal"
+    header="Tool Action Update"
+    [modal]="true"
+    [style]="{ width: '900px' }"
+  >
+    <div class="action-form">
+      <div class="form-grid">
+        <div class="field">
+          <label>Inspection Remarks</label>
+          <textarea pTextarea [(ngModel)]="actionData.inspection_remarks" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label>Repaired By</label>
+          <input pInputText [(ngModel)]="actionData.repaired_by" />
+        </div>
+        <div class="field">
+          <label>Problem Cause</label>
+          <input pInputText [(ngModel)]="actionData.problem_cause" />
+        </div>
+        <div class="field">
+          <label>Corrective Action</label>
+          <input pInputText [(ngModel)]="actionData.corrective_action" />
+        </div>
+      </div>
+
+      <div class="broken-parts-section">
+        <div class="section-header">
+          <h3>Broken Parts</h3>
+          <p-button [text]="true" icon="pi pi-plus" label="Add Part" (click)="addBrokenPart()"></p-button>
+        </div>
+
+        <div class="broken-parts-list">
+          @for (part of actionData.broken_parts; track $index) {
+            <div class="broken-part-row">
+              <div class="part-fields">
+                <input pInputText [(ngModel)]="part.mold_part_name" placeholder="Part Name" />
+                <input pInputText [(ngModel)]="part.pole_no" placeholder="Pole No" />
+                <input pInputText [(ngModel)]="part.part_number" placeholder="Part Number" />
+                <input pInputText [(ngModel)]="part.cavity_no" placeholder="Cavity No" />
+                <input pInputText type="number" [(ngModel)]="part.total_parts_broken" placeholder="Total Broken" />
+              </div>
+              <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removeBrokenPart($index)"></p-button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <p-button label="Submit & Complete Check-Out" (click)="submitActionUpdate()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+</div>

@@ -1,0 +1,89 @@
+<div class="login-page">
+  <!-- Left Panel: Illustration & Branding -->
+  <aside class="illustration-panel">
+    <div class="panel-background">
+      <div class="glow-orb orb-top"></div>
+      <div class="glow-orb orb-bottom"></div>
+      <div class="tech-pattern"></div>
+    </div>
+    
+    <div class="panel-content">
+      <div class="brand-box">
+        <h1 class="main-title">R-MAINTENANCE <span class="space"><span>2.0</span></span></h1>
+        <p class="main-tagline">Precision Engineering. Intelligent Maintenance.</p>
+      </div>
+      
+      <div class="illustration-wrapper">
+        <img src="assets/illustrations/login.svg" alt="Maintenance Login Illustration" class="main-illustration" />
+        <!-- Red/White themed decorative elements -->
+        <div class="glow-element element-1"></div>
+        <div class="glow-element element-2"></div>
+      </div>
+
+
+      <div class="panel-footer">
+        <div class="status-indicator">
+          <!-- <span class="dot"></span> -->
+          <!-- <span>System Online: v2.4.0</span> -->
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Right Panel: Login Form -->
+  <main class="login-panel">
+    <div class="form-container">
+      <div class="form-header">
+        <h2>Welcome Back</h2>
+        <p>Please enter your details to continue</p>
+      </div>
+
+      <form class="login-form" (submit)="$event.preventDefault(); login()">
+        <div class="input-group">
+          <label for="email">User ID / Email</label>
+          <div class="input-field">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <input id="email" [(ngModel)]="email" name="email" type="text" placeholder="e.g. admin@rmaint.com" required />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <div class="input-field">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <input id="password" [(ngModel)]="password" name="password" type="password" placeholder="••••••••" required />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <label class="remember-me">
+            <input type="checkbox" />
+            <span>Remember me</span>
+          </label>
+          <!-- <a href="#" class="forgot-link">Forgot password?</a> -->
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          <span class="btn-text">{{ loading ? 'Logging in...' : 'Login' }}</span>
+          <div class="btn-shimmer" *ngIf="!loading"></div>
+          <svg *ngIf="!loading" class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+          <span class="loader" *ngIf="loading"></span>
+        </button>
+
+      </form>
+
+      <div class="form-footer">
+        <p>Trusted by industry leaders worldwide.</p>
+      </div>
+    </div>
+  </main>
+</div>

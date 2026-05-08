@@ -1,0 +1,44 @@
+<div class="layout">
+
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+
+      <div class="left">
+        <span class="title">R-Maintenance 2.0</span>
+      </div>
+
+      <div class="right">
+        <p-button label="Intimation Slip" [raised]="true" severity="info" (click)="showSlip()" />
+        <!-- <span>
+          <img src="assets/icons/profile.svg" alt="profile">
+        </span> -->
+        <!-- <span>👤</span> -->
+      </div>
+
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+  <p-dialog
+    [(visible)]="visibleSlip"
+    [modal]="true"
+    [closable]="false"
+    [showHeader]="false"
+    [style]="{ width: '800px', border: 'none' }"
+    [contentStyle]="{ padding: '0', borderRadius: '12px', background: 'white' }"
+  >
+    <app-intimation-slip (onClose)="visibleSlip = false"></app-intimation-slip>
+  </p-dialog>
+
+</div>

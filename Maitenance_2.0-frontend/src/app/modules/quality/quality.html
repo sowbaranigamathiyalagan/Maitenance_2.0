@@ -1,0 +1,72 @@
+<div class="quality-page">
+  <div class="tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'approve'"
+      (click)="setTab('approve')"
+    >
+      Approve / Review
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'awaiting'"
+      (click)="setTab('awaiting')"
+    >
+      Awaiting Dispatch
+    </button>
+  </div>
+
+  <div class="table-card">
+    <p-table
+      class="custom-table"
+      [value]="activeTab === 'approve' ? approveList : awaitingList"
+      [loading]="loading"
+      [rows]="10"
+      [paginator]="true"
+      styleClass="p-datatable-striped"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Slip ID</th>
+          <th>Tool Code</th>
+          <th>Tool Name</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Problem Observed</th>
+          <th>Date Created</th>
+          <th>Action</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.tool_code }}</td>
+          <td>{{ item.tool_name }}</td>
+          <td>{{ item.category }}</td>
+          <td>
+            <span class="status-badge" [attr.data-status]="item.status">
+              {{ item.status }}
+            </span>
+          </td>
+          <td>{{ item.problem_observed }}</td>
+          <td>{{ item.date_created | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            @if (item.status === 'REQUESTED' || item.status === 'IN_PROGRESS') {
+              <p-button
+                label="Approve"
+                icon="pi pi-check"
+                class="approve-btn"
+                (click)="approveRow(item, activeTab)"
+              ></p-button>
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="empty-state">No intimations found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

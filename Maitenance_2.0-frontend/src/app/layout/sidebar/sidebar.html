@@ -1,0 +1,57 @@
+<div class="sidebar">
+
+  <!-- Logo -->
+  <div class="logo">
+    <!-- Add logo if needed -->
+  </div>
+
+  <!-- Menu -->
+  <div class="menu">
+
+    <div class="menu-item" routerLink="/overview" routerLinkActive="active" pTooltip="Overview" tooltipPosition="right">
+      <img src="assets/sidebar/dashboard.svg" />
+    </div>
+
+    <div class="menu-item" routerLink="/scanner" routerLinkActive="active" pTooltip="Scanner" tooltipPosition="right">
+      <img src="assets/sidebar/scanner.svg" />
+    </div>
+
+    <!-- <div class="menu-item" routerLink="/reports" routerLinkActive="active" pTooltip="Reports" tooltipPosition="right">
+      <img src="assets/sidebar/reports.svg" />
+    </div>
+
+    <div class="menu-item" routerLink="/settings" routerLinkActive="active" pTooltip="Settings" tooltipPosition="right">
+      <img src="assets/sidebar/settings.svg" /> -->
+    <!-- </div> -->
+
+    <div class="menu-item" *ngIf="isQA" routerLink="/quality" routerLinkActive="active" pTooltip="Quality" tooltipPosition="right">
+      <img src="assets/sidebar/quality.svg" />
+    </div>
+
+    <div class="menu-item" *ngIf="isIMS" routerLink="/hod-approval" routerLinkActive="active" pTooltip="HOD Approval" tooltipPosition="right">
+      <img src="assets/sidebar/img.svg" />
+    </div>
+
+  </div>
+
+  <!-- Profile Section -->
+  <div class="profile-section">
+    <div class="menu-item profile-trigger" (click)="toggleProfile()" pTooltip="Profile" tooltipPosition="right">
+      <img src="assets/sidebar/user.svg" />
+    </div>
+
+    <!-- Profile Popup -->
+    <div class="profile-popup" *ngIf="showProfilePopup">
+      <div class="user-info">
+        <p class="name">{{ userName }}</p>
+        <p class="type">{{ userType }}</p>
+      </div>
+      <div class="divider"></div>
+      <button class="logout-btn" (click)="logout()">
+        <i class="pi pi-sign-out"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+
+</div>

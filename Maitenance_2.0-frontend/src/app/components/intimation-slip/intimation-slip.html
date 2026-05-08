@@ -1,0 +1,108 @@
+<div class="intimation-slip-container">
+  <div class="header">
+    <h2 class="title">Intimation Slip</h2>
+    <button class="close-button" (click)="close()" aria-label="Close modal">
+      <img src="assets/icons/close.svg" alt="close" />
+    </button>
+  </div>
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="machineNumber">Machine Number</label>
+      <input
+        pInputText
+        id="machineNumber"
+        [(ngModel)]="formData.machineNumber"
+        placeholder="Enter Machine Number"
+      />
+    </div>
+
+    <div class="field">
+      <label for="moldNumber">Mold Number</label>
+      <input
+        pInputText
+        id="moldNumber"
+        [(ngModel)]="formData.moldNumber"
+        placeholder="Enter Mold Number"
+      />
+    </div>
+
+    <div class="field">
+      <label for="moldName">Mold Name</label>
+      <input
+        pInputText
+        id="moldName"
+        [(ngModel)]="formData.moldName"
+        placeholder="Enter Mold Name"
+      />
+    </div>
+
+    <div class="field">
+      <label for="timeDuration">Time Duration</label>
+      <input
+        pInputText
+        id="timeDuration"
+        [(ngModel)]="formData.timeDuration"
+        placeholder="Enter Duration (e.g. 4 months)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="materialName">Material Name</label>
+      <input
+        pInputText
+        id="materialName"
+        [(ngModel)]="formData.materialName"
+        placeholder="Enter Material Name"
+      />
+    </div>
+
+    <div class="field">
+      <label for="shift">Shift</label>
+      <p-select
+        id="shift"
+        [options]="shifts"
+        [(ngModel)]="formData.shift"
+        optionLabel="label"
+        placeholder="Select Shift"
+      ></p-select>
+    </div>
+
+    <div class="field">
+      <label for="department">Department</label>
+      <p-select
+        id="department"
+        [options]="departments"
+        [(ngModel)]="formData.department"
+        optionLabel="label"
+        placeholder="Select Department"
+      ></p-select>
+    </div>
+
+    <div class="field">
+      <label for="category">Category</label>
+      <p-select
+        id="category"
+        [options]="categories"
+        [(ngModel)]="formData.category"
+        optionLabel="label"
+        placeholder="Select Category"
+      ></p-select>
+    </div>
+
+    <div class="field full-width">
+      <label for="problemDesc">Problem desc</label>
+      <textarea
+        pTextarea
+        id="problemDesc"
+        [(ngModel)]="formData.problemDesc"
+        rows="4"
+        placeholder="Describe the problem observed..."
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button pButton label="Send" class="send-btn" (click)="send()"></button>
+  </div>
+</div>

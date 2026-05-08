@@ -1,0 +1,308 @@
+.scanner-page {
+  padding: 24px;
+  background-color: #fff;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  .title {
+    color: #d32f2f;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 16px;
+
+      input {
+        width: 250px;
+        border: 1px solid #ccc;
+        padding: 10px 14px;
+        border-radius: 6px;
+      }
+
+      ::ng-deep .send-btn {
+        .p-button {
+          background-color: #d32f2f;
+          border-color: #d32f2f;
+          padding: 8px 20px;
+          border-radius: 6px;
+
+          &:hover {
+            background-color: #b71c1c;
+          }
+        }
+      }
+    }
+  }
+
+  .details-card {
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-width: 1000px;
+    background: #fafafa;
+
+    .tool-header {
+      display: flex;
+      gap: 40px;
+      font-size: 22px;
+
+      .label {
+        font-weight: 800;
+        color: #000;
+      }
+      .value {
+        color: #333;
+      }
+    }
+
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+
+      img {
+        max-width: 350px;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .tool-label {
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+        font-size: 18px;
+      }
+    }
+
+    .info-grid {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      background: white;
+      box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
+
+      .info-row {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      .divider {
+        width: 1px;
+        height: 100px;
+        background-color: #eee;
+      }
+
+      .info-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 19px;
+
+        .label {
+          font-weight: 600;
+          color: #666;
+        }
+
+        .value {
+          color: #000;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    max-width: 1000px;
+
+    .action-btn {
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+      &.checkin {
+        background-color: #43a047;
+        &:hover { background-color: #2e7d32; }
+      }
+
+      &.checkout {
+        background-color: #1976d2;
+        &:hover { background-color: #1565c0; }
+      }
+
+      .icon {
+        font-size: 20px;
+      }
+
+      img.icon {
+        width: 24px;
+        height: 24px;
+        filter: brightness(0) invert(1);
+      }
+    }
+  }
+}
+
+// MODAL STYLES
+.checklist-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .checklist-header {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #eee;
+    font-weight: 800;
+    color: #333;
+
+    .header-options {
+      display: flex;
+      gap: 40px;
+      margin-right: 20px;
+    }
+  }
+
+  .checklist-items {
+    max-height: 50vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    .checklist-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      .item-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .name {
+          font-weight: 600;
+          font-size: 16px;
+        }
+
+        .edit-fields {
+          display: flex;
+          gap: 12px;
+          input { flex: 1; }
+        }
+      }
+
+      .item-options {
+        display: flex;
+        gap: 60px;
+        padding: 0 20px;
+        ::ng-deep .p-checkbox {
+          width: 24px;
+          height: 24px;
+        }
+      }
+    }
+  }
+}
+
+.action-form {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      
+      label { font-weight: 700; color: #555; }
+      
+      &.full-width { grid-column: span 2; }
+    }
+  }
+
+  .broken-parts-section {
+    background: #fcfcfc;
+    border: 1px dashed #ccc;
+    border-radius: 12px;
+    padding: 24px;
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      h3 { margin: 0; color: #d32f2f; }
+    }
+
+    .broken-part-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 0;
+      border-top: 1px solid #eee;
+
+      .part-fields {
+        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+      }
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+  
+  ::ng-deep .p-button {
+    padding: 10px 32px;
+    font-weight: 700;
+  }
+}
