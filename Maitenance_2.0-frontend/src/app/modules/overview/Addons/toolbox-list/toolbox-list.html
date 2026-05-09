@@ -1,19 +1,17 @@
 <div class="page">
-
+ 
   <!-- HEADER -->
   <div class="page-header" *ngIf="!loading && !hasError && toolboxes.length > 0">
     <span>Total Tools: {{ toolboxes.length }} (Showing: {{ filteredToolboxes.length }})</span>
-    
+   
     <div class="filter-controls">
       <label for="locationFilter">Location Filter:</label>
       <select id="locationFilter" [(ngModel)]="filterLocation" (change)="onFilterChange()">
         <option value="all">All Locations</option>
-        <option value="location1">Tool Room</option>
-        <option value="location2">Store Room</option>
-        <option value="location3">Production</option>
+        <option value="tool room">Tool Room</option>
+        <option value="store room (idle)">Store Room</option>
+        <option value="production">Production</option>
       </select>
-    </div>
-    <div>
       <label for="statusFilter">Status Filter:</label>
       <select id="statusFilter" [(ngModel)]="filterStatus" (change)="onFilterChange()">
         <option value="all">All Status</option>
@@ -23,13 +21,13 @@
       </select>
     </div>
   </div>
-
+ 
   <!-- LOADING STATE -->
   <div class="loading-state" *ngIf="loading">
     <div class="loader"></div>
     <p>Loading tool information...</p>
   </div>
-
+ 
   <!-- NO DATA / ERROR STATE -->
   <div class="empty-state" *ngIf="!loading && (hasError || toolboxes.length === 0)">
     <img src="assets/illustrations/nodata.svg" alt="No data found">
@@ -39,10 +37,10 @@
        Retry
     </button>
   </div>
-
+ 
   <!-- GRID -->
   <div class="grid" *ngIf="!loading && !hasError && toolboxes.length > 0">
-    <div 
+    <div
       class="card"
       *ngFor="let box of paginatedData"
       [ngClass]="box.status"
@@ -51,33 +49,33 @@
         <div class="title">{{ box.name }}</div>
         <div class="status-indicator"></div>
       </div>
-
+ 
       <div class="image-container">
         <img *ngIf="box.image" [src]="box.image" alt="tool image">
         <div *ngIf="!box.image" class="placeholder-icon">🛠️</div>
       </div>
-
+ 
       <div class="card-content">
         <div class="location">
           <span class="label">Location:</span>
           <span class="val">{{ box.location }}</span>
         </div>
       </div>
-
+ 
       <div class="footer">
         <span class="status-label">{{ box.status | uppercase }}</span>
         <span class="count">{{ box.value }}/{{box.pmshots}}</span>
       </div>
-
+ 
     </div>
   </div>
-
+ 
   <!-- PAGINATION -->
   <div class="pagination" *ngIf="!loading && !hasError && pages.length > 1">
     <button (click)="prevPage()" [disabled]="currentPage === 1">‹</button>
-
+ 
     <div class="page-numbers">
-      <button 
+      <button
         *ngFor="let p of pages"
         [class.active]="p === currentPage"
         (click)="goToPage(p)"
@@ -85,8 +83,8 @@
         {{ p }}
       </button>
     </div>
-
+ 
     <button (click)="nextPage()" [disabled]="currentPage === pages.length">›</button>
   </div>
-
+ 
 </div>
