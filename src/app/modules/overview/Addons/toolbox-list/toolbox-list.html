@@ -3,14 +3,33 @@
   <!-- HEADER -->
   <div class="page-header" *ngIf="!loading && !hasError && toolboxes.length > 0">
     <span>Total Tools: {{ toolboxes.length }} (Showing: {{ filteredToolboxes.length }})</span>
-    
+
+    <!-- SEARCH -->
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onFilterChange()"
+        placeholder="Search tool name / code..."
+      />
+    </div>
+
     <div class="filter-controls">
-      <label for="statusFilter">Status Filter:</label>
+      <label for="statusFilter">Status Filter</label>
       <select id="statusFilter" [(ngModel)]="filterStatus" (change)="onFilterChange()">
         <option value="all">All Status</option>
         <option value="ok">OK</option>
         <option value="critical">Critical</option>
         <option value="warning">Warning</option>
+      </select>
+
+      <label for="LocationFilter">Location Filter</label>
+      <select id="LocationFilter" [(ngModel)]="filterLocation" (change)="onFilterChange()">
+        <option value="all">All Locations</option>
+        <option value="production">Production</option>
+        <option value="tool room">Tool Room</option>
+        <option value="store room (idle)">Store Room (IDLE)</option>
       </select>
     </div>
   </div>
@@ -26,14 +45,12 @@
     <img src="assets/illustrations/nodata.svg" alt="No data found">
     <h3>{{ hasError ? 'Connection Error' : 'No Data Found' }}</h3>
     <p>{{ hasError ? 'Unable to reach the server. Please check your connection.' : 'No tool status records are available at the moment.' }}</p>
-    <button class="retry-btn" (click)="fetchToolStatus()">
-       Retry
-    </button>
+    <button class="retry-btn" (click)="fetchToolStatus()">Retry</button>
   </div>
 
   <!-- GRID -->
   <div class="grid" *ngIf="!loading && !hasError && toolboxes.length > 0">
-    <div 
+    <div
       class="card"
       *ngFor="let box of paginatedData"
       [ngClass]="box.status"
@@ -55,9 +72,13 @@
         </div>
       </div>
 
+      <!-- FOOTER WITH FLOW BUTTON — inside *ngFor -->
       <div class="footer">
         <span class="status-label">{{ box.status | uppercase }}</span>
-        <span class="count">{{ box.value }}/{{box.pmshots}}</span>
+        <span class="count">{{ box.value }}/{{ box.pmshots }}</span>
+        <button class="flow-btn" (click)="openFlowModal(box)" title="Check Process Status">
+          📋
+        </button>
       </div>
 
     </div>
@@ -66,9 +87,8 @@
   <!-- PAGINATION -->
   <div class="pagination" *ngIf="!loading && !hasError && pages.length > 1">
     <button (click)="prevPage()" [disabled]="currentPage === 1">‹</button>
-
     <div class="page-numbers">
-      <button 
+      <button
         *ngFor="let p of pages"
         [class.active]="p === currentPage"
         (click)="goToPage(p)"
@@ -76,8 +96,62 @@
         {{ p }}
       </button>
     </div>
-
     <button (click)="nextPage()" [disabled]="currentPage === pages.length">›</button>
+  </div>
+
+  <!-- FLOW MODAL -->
+  <div class="modal-overlay" *ngIf="showFlowModal" (click)="closeFlowModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="tool-name">{{ selectedTool?.name }}</span>
+          <span class="tool-code">{{ selectedTool?.code }}</span>
+        </div>
+        <button class="close-btn" (click)="closeFlowModal()">✕</button>
+      </div>
+
+      <!-- LOADING -->
+      <div class="flow-loading" *ngIf="flowLoading">
+        <div class="loader"></div>
+        <p>Fetching status...</p>
+      </div>
+
+      <!-- NO DATA -->
+      <div class="flow-empty" *ngIf="!flowLoading && !toolFlowInfo">
+        <p>No intimation slip found for this tool.</p>
+      </div>
+
+      <!-- FLOW -->
+      <div class="flow-container" *ngIf="!flowLoading && toolFlowInfo">
+
+        <div class="slip-meta">
+          <span>Slip ID: <strong>{{ toolFlowInfo.slip_id || '—' }}</strong></span>
+          <span>Current: <strong>{{ toolFlowInfo.slip_status || 'NONE' }}</strong></span>
+        </div>
+
+        <div class="flow-start">Start</div>
+
+        <ng-container *ngFor="let step of FLOW_STEPS">
+          <div class="flow-arrow" [ngClass]="getStepState(step.key)">▼</div>
+          <div class="flow-step" [ngClass]="getStepState(step.key)">
+            <div class="step-icon">
+              <span *ngIf="getStepState(step.key) === 'done'">✔</span>
+              <span *ngIf="getStepState(step.key) === 'active'">●</span>
+              <span *ngIf="getStepState(step.key) === 'pending'">○</span>
+            </div>
+            <div class="step-info">
+              <span class="step-label">{{ step.label }}</span>
+              <span class="step-dept" *ngIf="step.dept">{{ step.dept }}</span>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="flow-arrow" [ngClass]="toolFlowInfo.slip_status === 'QA_CLOSURE' ? 'done' : 'pending'">▼</div>
+        <div class="flow-end">End</div>
+
+      </div>
+    </div>
   </div>
 
 </div>

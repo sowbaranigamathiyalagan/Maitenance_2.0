@@ -17,6 +17,22 @@ export class ToolboxListComponent implements OnInit {
   currentPage = 1;
   pageSize = 15;
   filterStatus: string = 'all';
+  filterLocation: string = 'all';
+  searchQuery: string = '';
+
+  selectedTool: any = null;
+  showFlowModal: boolean = false;
+  flowLoading: boolean = false;
+  toolFlowInfo: any = null;
+
+  readonly FLOW_STEPS = [
+    { key: 'NONE',         label: 'Intimation Created', dept: '' },
+    { key: 'QA_APPROVAL',  label: 'QA Approval',        dept: 'QA' },
+    { key: 'CHECK_IN',     label: 'Check In',           dept: 'TOOLING' },
+    { key: 'CHECK_OUT',    label: 'Check Out',          dept: 'TOOLING' },
+    { key: 'IMG_APPROVAL', label: 'IMG Approval',       dept: 'IMG' },
+    { key: 'QA_CLOSURE',   label: 'QA Closure',         dept: 'QA' },
+  ];
 
   constructor(
     private intimationService: IntimationService,
@@ -58,10 +74,23 @@ export class ToolboxListComponent implements OnInit {
 
   get filteredToolboxes() {
     if (!this.toolboxes) return [];
-    if (this.filterStatus === 'all') return this.toolboxes;
-    return this.toolboxes.filter(box => 
-      box.status && box.status.toLowerCase() === this.filterStatus.toLowerCase()
-    );
+    const query = this.searchQuery.trim().toLowerCase();
+    return this.toolboxes.filter(box => {
+      const statusMatch =
+        this.filterStatus === 'all' ||
+        (box.status && box.status.toLowerCase() === this.filterStatus.toLowerCase());
+
+      const locationMatch =
+        this.filterLocation === 'all' ||
+        (box.location && box.location.toLowerCase() === this.filterLocation.toLowerCase());
+
+      const searchMatch =
+        !query ||
+        (box.name && box.name.toLowerCase().includes(query)) ||
+        (box.code && box.code.toLowerCase().includes(query));
+
+      return statusMatch && locationMatch && searchMatch;
+    });
   }
 
   getStatusClass(status: string) {
@@ -100,4 +129,47 @@ export class ToolboxListComponent implements OnInit {
       this.currentPage--;
     }
   }
-}
+
+  openFlowModal(box: any) {
+    this.selectedTool = box;
+    this.showFlowModal = true;
+    this.flowLoading = true;
+    this.toolFlowInfo = null;
+
+    this.intimationService.getToolInfo(box.name).subscribe({
+      next: (res) => {
+        this.zone.run(() => {
+          this.toolFlowInfo = res;
+          this.flowLoading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        this.zone.run(() => {
+          this.flowLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  closeFlowModal() {
+    this.selectedTool = null;
+    this.showFlowModal = false;
+    this.toolFlowInfo = null;
+  }
+
+  getStepState(stepKey: string): 'done' | 'active' | 'pending' {
+    if (!this.toolFlowInfo?.slip_status) return 'pending';
+
+    const currentStatus = this.toolFlowInfo.slip_status;
+    const keys = this.FLOW_STEPS.map(s => s.key);
+    const currentIdx = keys.indexOf(currentStatus);
+    const stepIdx = keys.indexOf(stepKey);
+
+    if (stepIdx < currentIdx) return 'done';
+    if (stepIdx === currentIdx) return 'active';
+    return 'pending';
+  }
+
+} 
