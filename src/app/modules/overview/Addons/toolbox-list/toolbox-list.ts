@@ -11,18 +11,18 @@ import { Intimation as IntimationService } from '../../../../core/services/intim
   styleUrls: ['./toolbox-list.scss']
 })
 export class ToolboxListComponent implements OnInit {
+
   toolboxes: any[] = [];
-  loading: boolean = false;
-  hasError: boolean = false;
+  loading = false;
+  hasError = false;
   currentPage = 1;
   pageSize = 15;
-  filterStatus: string = 'all';
-  filterLocation: string = 'all';
-  searchQuery: string = '';
-
+  filterStatus = 'all';
+  filterLocation = 'all';
+  searchQuery = '';
   selectedTool: any = null;
-  showFlowModal: boolean = false;
-  flowLoading: boolean = false;
+  showFlowModal = false;
+  flowLoading = false;
   toolFlowInfo: any = null;
 
   readonly FLOW_STEPS = [
@@ -79,16 +79,13 @@ export class ToolboxListComponent implements OnInit {
       const statusMatch =
         this.filterStatus === 'all' ||
         (box.status && box.status.toLowerCase() === this.filterStatus.toLowerCase());
-
       const locationMatch =
         this.filterLocation === 'all' ||
         (box.location && box.location.toLowerCase() === this.filterLocation.toLowerCase());
-
       const searchMatch =
         !query ||
         (box.name && box.name.toLowerCase().includes(query)) ||
         (box.code && box.code.toLowerCase().includes(query));
-
       return statusMatch && locationMatch && searchMatch;
     });
   }
@@ -114,20 +111,14 @@ export class ToolboxListComponent implements OnInit {
       .map((_, i) => i + 1);
   }
 
-  goToPage(page: number) {
-    this.currentPage = page;
-  }
+  goToPage(page: number) { this.currentPage = page; }
 
   nextPage() {
-    if (this.currentPage < this.pages.length) {
-      this.currentPage++;
-    }
+    if (this.currentPage < this.pages.length) this.currentPage++;
   }
 
   prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
+    if (this.currentPage > 1) this.currentPage--;
   }
 
   openFlowModal(box: any) {
@@ -135,7 +126,6 @@ export class ToolboxListComponent implements OnInit {
     this.showFlowModal = true;
     this.flowLoading = true;
     this.toolFlowInfo = null;
-
     this.intimationService.getToolInfo(box.name).subscribe({
       next: (res) => {
         this.zone.run(() => {
@@ -160,16 +150,18 @@ export class ToolboxListComponent implements OnInit {
   }
 
   getStepState(stepKey: string): 'done' | 'active' | 'pending' {
-    if (!this.toolFlowInfo?.slip_status) return 'pending';
-
-    const currentStatus = this.toolFlowInfo.slip_status;
+    if (!this.toolFlowInfo) return 'pending';
+    const suggestedAction = this.toolFlowInfo.suggested_action;
+    const slipStatus = this.toolFlowInfo.slip_status;
+    if (!suggestedAction || slipStatus === null) {
+      return stepKey === 'NONE' ? 'active' : 'pending';
+    }
     const keys = this.FLOW_STEPS.map(s => s.key);
-    const currentIdx = keys.indexOf(currentStatus);
+    const activeIdx = keys.indexOf(suggestedAction);
     const stepIdx = keys.indexOf(stepKey);
-
-    if (stepIdx < currentIdx) return 'done';
-    if (stepIdx === currentIdx) return 'active';
+    if (stepIdx < activeIdx) return 'done';
+    if (stepIdx === activeIdx) return 'active';
     return 'pending';
   }
 
-} 
+}

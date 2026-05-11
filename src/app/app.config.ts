@@ -7,6 +7,7 @@ import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
 import { CookieService } from 'ngx-cookie-service';
 import { routes } from './app.routes';
+import Aura from '@primeuix/themes/aura';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -16,6 +17,13 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     MessageService,
     CookieService,
-    providePrimeNG({})
+     providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: 'none' // Disables system-based dark mode
+        }
+      }
+    })
   ]
 };

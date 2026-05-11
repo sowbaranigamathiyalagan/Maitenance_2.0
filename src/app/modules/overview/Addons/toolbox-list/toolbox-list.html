@@ -147,7 +147,9 @@
           </div>
         </ng-container>
 
-        <div class="flow-arrow" [ngClass]="toolFlowInfo.slip_status === 'QA_CLOSURE' ? 'done' : 'pending'">▼</div>
+        <div class="flow-arrow" 
+        [ngClass]="toolFlowInfo.suggested_action === 'QA_CLOSURE' ? 'done' : 'pending'">▼
+</div>
         <div class="flow-end">End</div>
 
       </div>

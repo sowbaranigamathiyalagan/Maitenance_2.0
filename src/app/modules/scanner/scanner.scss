@@ -118,20 +118,23 @@
       }
 
       .info-item {
-        display: flex;
-        justify-content: space-between;
-        font-size: 19px;
+  display: grid;
+  grid-template-columns: 160px 1fr;  // fixed label width so colons line up
+  align-items: center;
+  font-size: 19px;
 
-        .label {
-          font-weight: 600;
-          color: #666;
-        }
+  .label {
+    font-weight: 600;
+    color: #666;
+    white-space: nowrap;
+  }
 
-        .value {
-          color: #000;
-          font-weight: 700;
-        }
-      }
+  .value {
+    color: #000;
+    font-weight: 700;
+  }
+}
+
     }
   }
 
@@ -277,20 +280,31 @@
       h3 { margin: 0; color: #d32f2f; }
     }
 
-    .broken-part-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 0;
-      border-top: 1px solid #eee;
+    // FIX 2 — action modal broken parts alignment
+.broken-part-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #eee;
 
-      .part-fields {
-        flex: 1;
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 10px;
-      }
+  .part-fields {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;  // Part Name gets more space
+    gap: 10px;
+
+    input {
+      width: 100%;
+      height: 38px;           // consistent height
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
     }
+  }
+}
   }
 }
 
