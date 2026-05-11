@@ -41,11 +41,10 @@ export class IntimationSlip {
   };
 
   categories = [
-    { label: 'Prev. Maint', value: 'Prev. Maint' },
-    { label: 'Break Down', value: 'Break Down' },
-    { label: 'Repair', value: 'Repair' },
-    { label: 'Modify', value: 'Modify' },
-    { label: 'PM', value: 'PM' },
+    { label: 'Prev. Maint', value: 'PM' },
+    { label: 'Break Down', value: 'BD' },
+    { label: 'Repair', value: 'REPAIR' },
+    { label: 'Modify', value: 'MODIFY' },
   ];
 
   shifts = [
