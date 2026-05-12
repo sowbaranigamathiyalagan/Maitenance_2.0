@@ -48,15 +48,23 @@
       }
     }
   }
+  .details-layout {
+    display: flex;
+    align-items: stretch;
+    gap: 32px;
+    width: 100%;
+  }
 
   .details-card {
+    flex: 0 0 70%;
+    max-width: 70%;
+
     border: 1px solid #ccc;
     border-radius: 12px;
     padding: 32px;
     display: flex;
     flex-direction: column;
     gap: 32px;
-    max-width: 1000px;
     background: #fafafa;
 
     .tool-header {
@@ -70,27 +78,6 @@
       }
       .value {
         color: #333;
-      }
-    }
-
-    .image-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-
-      img {
-        max-width: 350px;
-        height: auto;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      }
-
-      .tool-label {
-        font-weight: 700;
-        color: #333;
-        margin: 0;
-        font-size: 18px;
       }
     }
 
@@ -109,9 +96,6 @@
         display: flex;
         flex-direction: column;
         gap: 28px;
-        //  display: grid;
-        //  grid-template-columns: 130px 15px auto;
-        // margin-bottom: 8px;
       }
 
       .divider {
@@ -137,7 +121,34 @@
     font-weight: 700;
   }
 }
+}
+  }
 
+  .image-container {
+    flex: 0 0 30%;
+    max-width: 30%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+
+    img {
+      width: 100%;
+      max-width: 320px;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      object-fit: contain;
+    }
+
+    .tool-label {
+      font-weight: 700;
+      color: #333;
+      margin: 0;
+      font-size: 18px;
+      text-align: center;
     }
   }
 
