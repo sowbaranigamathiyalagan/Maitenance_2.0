@@ -24,6 +24,10 @@ export class Intimation {
     return this.http.get(`${this.baseUrl}/api/tool-intimation/list`);
   }
 
+  getRecentActivity(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/tool-intimation/recent`);
+  }
+
   getQaApprovalList(): Observable<any> {
     return this.http.get(`${this.baseUrl}/api/tool-intimation/qa`);
   }

@@ -8,6 +8,7 @@ import { Quality } from './modules/quality/quality';
 import { HodApproval } from './modules/hod-approval/hod-approval';
 import { LayoutComponent } from './layout/layout/layout';
 import { authGuard, loginGuard } from './core/guards/auth.guard';
+import { Recents } from './modules/recents/recents';
 
 
 export const routes: Routes = [
@@ -20,7 +21,7 @@ export const routes: Routes = [
     children: [
       { path: 'overview', component: Overview },
       { path: 'scanner', component: Scanner },
-      { path: 'reports', component: Reports },
+      { path: 'recents', component: Recents },
       { path: 'settings', component: Settings },
       { path: 'quality', component: Quality },
       { path: 'hod-approval', component: HodApproval }
