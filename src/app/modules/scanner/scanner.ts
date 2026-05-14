@@ -88,6 +88,7 @@ export class Scanner implements AfterViewInit {
           summary: 'Tool Found',
           detail: `Information for ${this.scannerInput} loaded.`,
         });
+        this.scannerInput = ''; // Clear input on success
       },
       error: (err) => {
         this.messageService.add({
@@ -95,6 +96,7 @@ export class Scanner implements AfterViewInit {
           summary: 'Error',
           detail: 'Failed to fetch tool information.',
         });
+        this.scannerInput = ''; // Clear input on error
         this.showDetails = false;
         this.loading = false;
         this.focusInput();
