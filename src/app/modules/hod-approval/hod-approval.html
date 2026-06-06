@@ -70,13 +70,13 @@
   >
     <div class="remarks-container" style="padding-top: 1rem;">
       <div class="field" style="margin-bottom: 1.5rem;">
-        <label for="remarks" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #444;">Remarks</label>
+        <label for="remarks" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Remarks</label>
         <textarea 
           id="remarks" 
           pTextarea 
           [(ngModel)]="approvalRemarks" 
           rows="4" 
-          style="width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px;"
+          style="width: 100%; border-radius: 8px; border: 1px solid var(--border-medium); padding: 10px; background: transparent; color: var(--text-main);"
           placeholder="Enter approval remarks..."
         ></textarea>
       </div>

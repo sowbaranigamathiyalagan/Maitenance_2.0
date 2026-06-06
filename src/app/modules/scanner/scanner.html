@@ -24,75 +24,74 @@
   </div>
 
   @if (showDetails && toolInfo) {
-    <div class="details-layout">
-      <div class="details-card">
-        <div class="tool-header">
-          <span class="label">Tool Name :</span>
-          <span class="value">{{ toolInfo.tool_code }}</span>
+    <div class="scanner-result-card animate-slide-up glass-panel">
+      
+      <!-- Left side: Image -->
+      <div class="card-left" (click)="fileInput.click()">
+        <img [src]="toolInfo.image_url" alt="Tool Image" />
+        <div class="image-overlay"><i class="pi pi-camera"></i> <p>Change Image</p></div>
+        <input type="file" hidden #fileInput accept=".jpeg,.jpg,.png" (change)="onImageSelect($event)" />
+      </div>
+
+      <!-- Right side: Data -->
+      <div class="card-right">
+        
+        <!-- Header -->
+        <div class="card-header">
+          <div class="titles">
+            <h2 class="tool-code">{{ toolInfo.tool_code }}</h2>
+            <p class="tool-name">{{ toolInfo.toolName }}</p>
+          </div>
+          <p-button label="Intimation Slip" icon="pi pi-file" class="slip-btn" size="small" (click)="showSlip()"></p-button>
         </div>
 
+        <div class="divider"></div>
+
+        <!-- Info Grid -->
         <div class="info-grid">
-          <div class="info-row">
-            <div class="info-item">
-              <span class="label">Part Name</span>
-              <span class="colon">:</span>
-              <span class="value">{{ toolInfo.toolName }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Total Shots</span>
-              <span class="colon">:</span>
-              <span class="value">{{ toolInfo.total_shots }}</span>
-            </div>
+          <div class="info-block">
+            <span class="label">Total Shots</span>
+            <span class="value">{{ toolInfo.total_shots }}</span>
           </div>
-          <div class="divider"></div>
-          <div class="info-row">
-            <div class="info-item">
-              <span class="label">Last PM Date</span>
-              <span class="colon">:</span>
-              <span class="value">{{ toolInfo.last_pm_date | date: 'dd/MM/yy' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Current Status</span>
-              <span class="colon">:</span>
-              <span class="value">{{ toolInfo.current_status }}</span>
-            </div>
+          <div class="info-block">
+            <span class="label">Last PM Date</span>
+            <span class="value">{{ toolInfo.last_pm_date | date: 'dd/MM/yy' }}</span>
           </div>
-          <div class="divider"></div>
-          <div class="info-row">
-            <div class="info-item">
-              <span class="label">MIS Status</span>
-              <span class="colon">:</span>
-              <span class="value">{{ toolInfo.slip_status}}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Action</span>
-              <span class="colon">:</span>
-              <span class="value">{{ toolInfo.suggested_action }}</span>
-            </div>
+          <div class="info-block">
+            <span class="label">Current Status</span>
+            <span class="value status-badge" [ngClass]="toolInfo.current_status?.toLowerCase()">{{ toolInfo.current_status }}</span>
+          </div>
+          <div class="info-block">
+            <span class="label">MIS Status</span>
+            <span class="value">{{ toolInfo.slip_status }}</span>
+          </div>
+          <div class="info-block">
+            <span class="label">Suggested Action</span>
+            <span class="value action-badge">{{ toolInfo.suggested_action }}</span>
           </div>
         </div>
+
+        <!-- Footer / Actions -->
+        <div class="card-footer-actions">
+          @if (toolInfo.suggested_action === 'CHECK_IN') {
+            <p-button
+              [label]="toolInfo.action_label || 'Check In to Tool Room'"
+              icon="pi pi-sign-in"
+              severity="success"
+              class="action-btn"
+              (click)="onCheckIn()"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'CHECK_OUT') {
+            <p-button
+              [label]="toolInfo.action_label || 'Check Out from Tool Room'"
+              icon="pi pi-sign-out"
+              class="action-btn"
+              (click)="onCheckOut()"
+            ></p-button>
+          }
+        </div>
+
       </div>
-      <div class="image-container">
-        <img [src]="toolInfo.image_url" alt="Tool Image" />
-        <p class="tool-label">{{ toolInfo.toolName }}</p>
-      </div>
-    </div>  
-    <div class="actions">
-      @if (toolInfo.suggested_action === 'CHECK_IN') {
-        <p-button
-          [label]="toolInfo.action_label || 'Check In'"
-          icon="pi pi-sign-in"
-          class="action-btn checkin"
-          (click)="onCheckIn()"
-        ></p-button>
-      } @else if (toolInfo.suggested_action === 'CHECK_OUT') {
-        <p-button
-          [label]="toolInfo.action_label || 'Check Out'"
-          icon="pi pi-sign-out"
-          class="action-btn checkout"
-          (click)="onCheckOut()"
-        ></p-button>
-      }
     </div>
   }
 
@@ -109,6 +108,7 @@
         <div class="header-options">
           <span>OK</span>
           <span>NOT OK</span>
+          <span>NA</span>
         </div>
       </div>
 
@@ -117,12 +117,9 @@
           @for (item of checklistData.check_items; track $index) {
             <div class="checklist-row">
               <div class="item-info">
-                <span class="name">{{ item.check_item }}</span>
-                @if (checklistSource === 'PREVIOUS_SESSION') {
-                  <div class="edit-fields">
-                    <input pInputText [(ngModel)]="item.observation" placeholder="Observation" />
-                    <input pInputText [(ngModel)]="item.remarks" placeholder="Remarks" />
-                  </div>
+                <span class="name">{{ item.check_item || item.item_name }}</span>
+                @if (item.remarks) {
+                  <span class="remarks-text" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Remarks: {{ item.remarks }}</span>
                 }
               </div>
               <div class="item-options">
@@ -130,13 +127,19 @@
                   [(ngModel)]="item.observation"
                   [name]="'obs_' + $index"
                   value="OK"
-                  [disabled]="checklistSource === 'PREVIOUS_SESSION'"
+                  (ngModelChange)="onObservationChange(item, 'OK')"
                 ></p-radioButton>
                 <p-radioButton
                   [(ngModel)]="item.observation"
                   [name]="'obs_' + $index"
                   value="NOT_OK"
-                  [disabled]="checklistSource === 'PREVIOUS_SESSION'"
+                  (ngModelChange)="onObservationChange(item, 'NOT_OK')"
+                ></p-radioButton>
+                <p-radioButton
+                  [(ngModel)]="item.observation"
+                  [name]="'obs_' + $index"
+                  value="NA"
+                  (ngModelChange)="onObservationChange(item, 'NA')"
                 ></p-radioButton>
               </div>
             </div>
@@ -145,7 +148,44 @@
       </div>
 
       <div class="modal-footer">
-        <p-button label="Submit Checklist" (click)="submitChecklist()"></p-button>
+        <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (click)="proceedToActionModal()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- NOT OK REMARKS POPUP -->
+  <p-dialog
+    [(visible)]="showRemarksPopup"
+    header="Remarks for NOT OK Item"
+    [modal]="true"
+    [closable]="false"
+    [style]="{ width: '450px' }"
+  >
+    <div class="remarks-popup">
+      <p class="remarks-item-name">{{ activeRemarkItem?.check_item || activeRemarkItem?.item_name }}</p>
+      <div class="field">
+        <label>Enter Remarks <span class="required">*</span></label>
+        <textarea
+          pTextarea
+          [(ngModel)]="tempRemark"
+          rows="4"
+          placeholder="Describe the issue observed..."
+          class="remarks-textarea"
+        ></textarea>
+      </div>
+      <div class="remarks-popup-footer">
+        <p-button
+          label="Cancel"
+          severity="secondary"
+          [outlined]="true"
+          (click)="cancelRemark()"
+        ></p-button>
+        <p-button
+          label="Save Remarks"
+          icon="pi pi-check"
+          [disabled]="!tempRemark.trim()"
+          (click)="saveRemark()"
+        ></p-button>
       </div>
     </div>
   </p-dialog>
@@ -160,48 +200,117 @@
     <div class="action-form">
       <div class="form-grid">
         <div class="field">
-          <label>Inspection Remarks</label>
+          <label>Inspection Remarks <span style="color: var(--status-error);">*</span></label>
           <textarea pTextarea [(ngModel)]="actionData.inspection_remarks" rows="2"></textarea>
         </div>
         <div class="field">
-          <label>Repaired By</label>
+          <label>Repaired By <span style="color: var(--status-error);">*</span></label>
           <input pInputText [(ngModel)]="actionData.repaired_by" />
         </div>
         <div class="field">
-          <label>Problem Cause</label>
+          <label>Problem Cause <span style="color: var(--status-error);">*</span></label>
           <input pInputText [(ngModel)]="actionData.problem_cause" />
         </div>
         <div class="field">
-          <label>Corrective Action</label>
+          <label>Corrective Action <span style="color: var(--status-error);">*</span></label>
           <input pInputText [(ngModel)]="actionData.corrective_action" />
         </div>
+        <div class="field full-width">
+          <label>Marking Sheet <span style="color: var(--status-error);">*</span></label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input #markingSheetInput type="file" class="p-inputtext" accept=".jpeg,.jpg,.png" (change)="onMarkingSheetSelect($event)" style="flex: 1; padding: 10px; cursor: pointer;" />
+            <p-button *ngIf="markingSheetFile" icon="pi pi-times" severity="danger" [outlined]="true" (click)="clearMarkingSheet()" pTooltip="Clear Selected Image"></p-button>
+          </div>
+        </div>
       </div>
 
-      <div class="broken-parts-section">
-        <div class="section-header">
-          <h3>Broken Parts</h3>
-          <p-button [text]="true" icon="pi pi-plus" label="Add Part" (click)="addBrokenPart()"></p-button>
-        </div>
-
-        <div class="broken-parts-list">
-          @for (part of actionData.broken_parts; track $index) {
-            <div class="broken-part-row">
-              <div class="part-fields">
-                <input pInputText [(ngModel)]="part.mold_part_name" placeholder="Part Name" />
-                <input pInputText [(ngModel)]="part.pole_no" placeholder="Pole No" />
-                <input pInputText [(ngModel)]="part.part_number" placeholder="Part Number" />
-                <input pInputText [(ngModel)]="part.cavity_no" placeholder="Cavity No" />
-                <input pInputText type="number" [(ngModel)]="part.total_parts_broken" placeholder="Total Broken" />
-              </div>
-              <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removeBrokenPart($index)"></p-button>
+      <p-tabs [(value)]="activeActionTabIndex" (valueChange)="onActionTabChange($event)" styleClass="action-tabs">
+        <p-tablist>
+            <p-tab value="0">Broken Parts</p-tab>
+            <p-tab value="1">Spares Consumed</p-tab>
+        </p-tablist>
+        
+        <p-tabpanels>
+        <p-tabpanel value="0">
+          <div class="broken-parts-section">
+            <div class="section-header">
+              <h3>Broken Parts</h3>
+              <p-button [text]="true" icon="pi pi-plus" label="Add Part" (click)="addBrokenPart()"></p-button>
             </div>
-          }
-        </div>
-      </div>
+
+            <div class="broken-parts-list">
+              @for (part of actionData.broken_parts; track $index) {
+                <div class="broken-part-row">
+                  <div class="part-fields">
+                    <input pInputText [(ngModel)]="part.mold_part_name" placeholder="Part Name" />
+                    <input pInputText [(ngModel)]="part.pole_no" placeholder="Pole No" />
+                    <input pInputText [(ngModel)]="part.part_number" placeholder="Part Number" />
+                    <input pInputText [(ngModel)]="part.cavity_no" placeholder="Cavity No" />
+                    <input pInputText type="number" [(ngModel)]="part.total_parts_broken" placeholder="Total Broken" />
+                  </div>
+                  <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removeBrokenPart($index)"></p-button>
+                </div>
+              }
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <p-tabpanel value="1">
+          <div class="broken-parts-section">
+            <div class="section-header">
+              <h3>Spares Consumed</h3>
+              <p-button [text]="true" icon="pi pi-plus" label="Add Spare" (click)="addSpare()"></p-button>
+            </div>
+
+            <div class="broken-parts-list">
+              @for (spare of actionData.spares_consumed; track $index) {
+                <div class="broken-part-row">
+                  <div class="spare-fields" style="flex: 1; display: flex; gap: 10px;">
+                    <p-select 
+                      [options]="sparesList" 
+                      [(ngModel)]="spare.itemcode" 
+                      optionValue="itemcode" 
+                      [filter]="true" 
+                      filterBy="itemcode,partName" 
+                      placeholder="Search and Select Spare"
+                      [showClear]="true"
+                      [style]="{'width': '100%'}"
+                      styleClass="spare-dropdown"
+                    >
+                      <ng-template pTemplate="selectedItem" let-selectedOption>
+                        <div *ngIf="selectedOption">{{ selectedOption.itemcode }} - {{ selectedOption.partName }}</div>
+                      </ng-template>
+                      <ng-template pTemplate="item" let-option>
+                        <div>{{ option.itemcode }} - {{ option.partName }}</div>
+                      </ng-template>
+                    </p-select>
+                    
+                    <input pInputText type="number" [(ngModel)]="spare.quantity" placeholder="Quantity" style="width: 150px; flex-shrink: 0;" />
+                  </div>
+                  <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removeSpare($index)"></p-button>
+                </div>
+              }
+            </div>
+          </div>
+        </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
 
       <div class="modal-footer">
-        <p-button label="Submit & Complete Check-Out" (click)="submitActionUpdate()"></p-button>
+        <p-button label="Submit & Complete Check-Out" (click)="submitCombinedCheckOut()" [disabled]="submittingCheckOut" [icon]="submittingCheckOut ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></p-button>
       </div>
     </div>
+  </p-dialog>
+
+  <!-- INTIMATION SLIP MODAL -->
+  <p-dialog
+    [(visible)]="visibleSlip"
+    [modal]="true"
+    [closable]="false"
+    [showHeader]="false"
+    [style]="{ width: '800px', border: 'none' }"
+    [contentStyle]="{ padding: '0', borderRadius: '12px', background: 'white' }"
+  >
+    <app-intimation-slip *ngIf="visibleSlip" [autofillData]="toolInfo" (onClose)="visibleSlip = false"></app-intimation-slip>
   </p-dialog>
 </div>

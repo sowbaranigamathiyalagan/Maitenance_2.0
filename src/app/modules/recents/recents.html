@@ -23,6 +23,7 @@
           <th>Created By</th>
           <th>Verified By</th>
           <th>Date Created</th>
+          <th>Actions</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
@@ -40,13 +41,156 @@
           <td>{{ item.created_by }}</td>
           <td>{{ item.verified_by }}</td>
           <td>{{ item.date_created | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>
+            <p-button 
+              icon="pi pi-file-pdf" 
+              (click)="viewReport(item)" 
+              *ngIf="item.status?.toUpperCase() === 'CLOSED'"
+              styleClass="p-button-rounded p-button-text p-button-sm p-button-info"
+              pTooltip="View PDF Report">
+            </p-button>
+          </td>
         </tr>
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="9" class="empty-state">No recent activity found.</td>
+          <td colspan="10" class="empty-state">No recent activity found.</td>
         </tr>
       </ng-template>
     </p-table>
   </div>
 </div>
+
+<p-dialog 
+  header="Maintenance Report" 
+  [(visible)]="displayReportModal" 
+  [modal]="true" 
+  [style]="{width: '80vw'}" 
+  [maximizable]="true"
+  appendTo="body"
+  styleClass="report-dialog">
+  
+  <div class="report-content" id="printable-report" *ngIf="selectedReport">
+    <div class="report-header">
+      <h2>Maintenance Activity Report</h2>
+      <p>Slip ID: {{ selectedReport.report_info?.slip_id }} | Generated: {{ selectedReport.report_info?.generated_at | date:'medium' }}</p>
+      <hr/>
+    </div>
+
+    <div class="report-section">
+      <h3>Tool Information</h3>
+      <div class="grid-layout">
+        <div><strong>Tool Code:</strong> {{ selectedReport.tool_information?.tool_code }}</div>
+        <div><strong>Machine No:</strong> {{ selectedReport.tool_information?.machine_no }}</div>
+        <div><strong>Mold No:</strong> {{ selectedReport.tool_information?.mold_no }}</div>
+        <div><strong>Mold Name:</strong> {{ selectedReport.tool_information?.mold_name }}</div>
+        <div><strong>Material Name:</strong> {{ selectedReport.tool_information?.material_name }}</div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Intimation Details</h3>
+      <div class="grid-layout">
+        <div><strong>Category:</strong> {{ selectedReport.intimation_details?.category }}</div>
+        <div><strong>Department:</strong> {{ selectedReport.intimation_details?.department }}</div>
+        <div><strong>Shift:</strong> {{ selectedReport.intimation_details?.shift }}</div>
+        <div><strong>Problem Observed:</strong> {{ selectedReport.intimation_details?.problem_observed }}</div>
+        <div><strong>Date & Time:</strong> {{ selectedReport.intimation_details?.date }} {{ selectedReport.intimation_details?.time }}</div>
+        <div><strong>Handed Over By:</strong> {{ selectedReport.intimation_details?.handed_over_by }}</div>
+        <div><strong>Verified By QA:</strong> {{ selectedReport.intimation_details?.verified_by_qa }}</div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Tool Room Action</h3>
+      <div class="grid-layout">
+        <div><strong>Received By:</strong> {{ selectedReport.tool_room_action?.received_by }}</div>
+        <div><strong>Repaired By:</strong> {{ selectedReport.tool_room_action?.repaired_by }}</div>
+        <div><strong>Repair Time:</strong> {{ selectedReport.tool_room_action?.repair_time }}</div>
+        <div><strong>Problem Cause:</strong> {{ selectedReport.tool_room_action?.problem_cause }}</div>
+        <div><strong>Corrective Action:</strong> {{ selectedReport.tool_room_action?.corrective_action }}</div>
+        <div><strong>Parts Replaced:</strong> {{ selectedReport.tool_room_action?.parts_replaced }}</div>
+      </div>
+    </div>
+    
+    <div class="report-section" *ngIf="selectedReport.broken_parts?.length">
+      <h3>Broken Parts</h3>
+      <p-table [value]="selectedReport.broken_parts" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Part Name</th>
+            <th>Part No</th>
+            <th>Total Broken</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-part>
+          <tr>
+            <td>{{ part.mold_part_name }}</td>
+            <td>{{ part.part_number }}</td>
+            <td>{{ part.total_parts_broken }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="report-section" *ngIf="selectedReport.spares_consumed?.length">
+      <h3>Spares Consumed</h3>
+      <p-table [value]="selectedReport.spares_consumed" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Spare Item / Code</th>
+            <th>Quantity Consumed</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-spare>
+          <tr>
+            <td>{{ spare.itemcode }}</td>
+            <td>{{ spare.quantity }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="report-section" *ngIf="selectedReport.maintenance_checklist?.items?.length">
+      <h3>Maintenance Checklist</h3>
+      <p-table [value]="selectedReport.maintenance_checklist.items" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Item Name</th>
+            <th>Observation</th>
+            <th>Remarks</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.observation }}</td>
+            <td>{{ item.remarks }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <div *ngIf="selectedReport.maintenance_checklist?.marking_sheet" style="margin-top: 1.5rem; text-align: center;">
+        <h4>Marking Sheet</h4>
+        <img [src]="selectedReport.maintenance_checklist.marking_sheet" alt="Marking Sheet" style="max-width: 100%; max-height: 800px; border: 1px solid #ccc;"/>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Approvals & Verification</h3>
+      <div class="grid-layout">
+        <div><strong>HOD Approved By:</strong> {{ selectedReport.hod_approval?.approved_by }}</div>
+        <div><strong>HOD Remarks:</strong> {{ selectedReport.hod_approval?.remarks }}</div>
+        <div><strong>Final QA Checked By:</strong> {{ selectedReport.final_qa?.checked_by }}</div>
+        <div><strong>QA Status:</strong> {{ selectedReport.final_qa?.status }}</div>
+        <div><strong>QA Remarks:</strong> {{ selectedReport.final_qa?.remarks }}</div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button icon="pi pi-print" label="Download / Print PDF" styleClass="p-button-success" (onClick)="downloadPDF()"></p-button>
+    <p-button icon="pi pi-times" label="Close" styleClass="p-button-text" (onClick)="displayReportModal = false"></p-button>
+  </ng-template>
+</p-dialog>
+

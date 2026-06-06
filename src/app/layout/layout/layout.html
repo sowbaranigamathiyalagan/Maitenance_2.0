@@ -10,15 +10,20 @@
     <div class="topbar">
 
       <div class="left">
-        <span class="title">R-Maintenance 2.0</span>
+        <span class="title">MAINTENANCE 2.0</span>
+        <img src="/assets/logo.png" alt="Logo" class="main-logo" />
       </div>
 
       <div class="right">
-        <p-button label="Intimation Slip" [raised]="true" severity="info" (click)="showSlip()" />
-        <!-- <span>
-          <img src="assets/icons/profile.svg" alt="profile">
-        </span> -->
-        <!-- <span>👤</span> -->
+        <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" title="Toggle Theme">
+          <i class="pi" [ngClass]="themeService.isDarkMode() ? 'pi-sun' : 'pi-moon'"></i>
+        </button>
+        <div class="user-badge" (click)="menu.toggle($event)" style="cursor: pointer;">
+          <div class="avatar">{{ userName.charAt(0).toUpperCase() }}</div>
+          <span class="name">Hi, {{ userName }}</span>
+          <i class="pi pi-angle-down" style="font-size: 0.8rem; margin-left: 4px; color: #64748b;"></i>
+        </div>
+        <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body"></p-menu>
       </div>
 
     </div>
@@ -29,16 +34,5 @@
     </div>
 
   </div>
-
-  <p-dialog
-    [(visible)]="visibleSlip"
-    [modal]="true"
-    [closable]="false"
-    [showHeader]="false"
-    [style]="{ width: '800px', border: 'none' }"
-    [contentStyle]="{ padding: '0', borderRadius: '12px', background: 'white' }"
-  >
-    <app-intimation-slip (onClose)="visibleSlip = false"></app-intimation-slip>
-  </p-dialog>
 
 </div>

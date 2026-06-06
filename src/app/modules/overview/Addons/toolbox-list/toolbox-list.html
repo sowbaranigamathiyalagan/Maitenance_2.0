@@ -51,34 +51,52 @@
   <!-- GRID -->
   <div class="grid" *ngIf="!loading && !hasError && toolboxes.length > 0">
     <div
-      class="card"
-      *ngFor="let box of paginatedData"
+      class="card animate-slide-up"
+      *ngFor="let box of paginatedData; let i = index"
       [ngClass]="box.status"
+      [style.animation-delay]="(i * 0.05) + 's'"
     >
-      <div class="card-header">
-        <div class="title">{{ box.name }}</div>
-        <div class="status-indicator"></div>
-      </div>
-
+      <!-- Image -->
       <div class="image-container">
         <img *ngIf="box.image" [src]="box.image" alt="tool image">
         <div *ngIf="!box.image" class="placeholder-icon">🛠️</div>
       </div>
 
-      <div class="card-content">
-        <div class="location">
-          <span class="label">Location:</span>
-          <span class="val">{{ box.location }}</span>
+      <!-- Body -->
+      <div class="card-body">
+
+        <!-- Title + animated dot -->
+        <div class="card-title-row">
+          <span class="tool-name">{{ box.name }}</span>
+          <span class="status-dot"></span>
         </div>
+
+        <!-- Location -->
+        <div class="card-location">
+          <span class="loc-icon">📍</span>
+          <span>{{ box.location }}</span>
+        </div>
+
+        <!-- Shot progress bar -->
+        <div class="shot-info">
+          <div class="shot-label-row">
+            <span class="shot-label">Shots</span>
+            <span class="shot-count">{{ box.value | number }} / {{ box.pmshots | number }}</span>
+          </div>
+          <div class="shot-bar">
+            <div
+              class="shot-bar-fill"
+              [style.width.%]="(box.value / box.pmshots) * 100 | number:'1.0-0'"
+            ></div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- FOOTER WITH FLOW BUTTON — inside *ngFor -->
-      <div class="footer">
-        <span class="status-label">{{ box.status | uppercase }}</span>
-        <span class="count">{{ box.value }}/{{ box.pmshots }}</span>
-        <button class="flow-btn" (click)="openFlowModal(box)" title="Check Process Status">
-          📋
-        </button>
+      <!-- Footer -->
+      <div class="card-footer">
+        <span class="status-pill">{{ box.status | uppercase }}</span>
+        <button class="flow-btn" (click)="openFlowModal(box)" title="Check Process Status">📋</button>
       </div>
 
     </div>

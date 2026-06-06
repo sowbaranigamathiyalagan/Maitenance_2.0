@@ -48,13 +48,15 @@
     </div>
 
     <div class="field">
-      <label for="materialName">Material Name</label>
-      <input
-        pInputText
-        id="materialName"
+      <label for="materialName">Material name</label>
+      <p-select
+        [options]="materials"
         [(ngModel)]="formData.materialName"
-        placeholder="Enter Material Name"
-      />
+        optionLabel="label"
+        placeholder="Select material"
+        id="materialName"
+        appendTo="body"
+      ></p-select>
     </div>
 
     <div class="field">
@@ -87,18 +89,55 @@
         [(ngModel)]="formData.category"
         optionLabel="label"
         placeholder="Select Category"
+        (onChange)="onCategoryChange()"
       ></p-select>
     </div>
 
     <div class="field full-width">
-      <label for="problemDesc">Problem desc</label>
-      <textarea
-        pTextarea
-        id="problemDesc"
-        [(ngModel)]="formData.problemDesc"
-        rows="4"
-        placeholder="Describe the problem observed..."
-      ></textarea>
+      <div class="desc-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <label for="problemDesc" style="margin-bottom: 0;">Problem desc</label>
+        @if (savedDescriptions.length > 0) {
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <p-select
+              [options]="savedDescriptions"
+              [(ngModel)]="selectedSavedDescription"
+              optionLabel="description"
+              placeholder="Select a saved description..."
+              (onChange)="onSavedDescChange()"
+              [style]="{'width': '300px'}"
+            ></p-select>
+            <p-button 
+              icon="pi pi-trash" 
+              severity="danger" 
+              [text]="true" 
+              [rounded]="true" 
+              (click)="deleteDescription()" 
+              [disabled]="!selectedSavedDescription"
+              pTooltip="Delete selected description"
+            ></p-button>
+          </div>
+        }
+      </div>
+      <div class="textarea-wrap" style="position: relative;">
+        <textarea
+          pTextarea
+          id="problemDesc"
+          [(ngModel)]="formData.problemDesc"
+          rows="4"
+          placeholder="Describe the problem observed..."
+        ></textarea>
+        <p-button 
+          label="Save" 
+          icon="pi pi-save" 
+          size="small"
+          severity="secondary"
+          [text]="true"
+          (click)="saveDescription()"
+          styleClass="save-desc-btn"
+          [style]="{'position': 'absolute', 'bottom': '8px', 'right': '8px', 'background': '#f8fafc'}"
+          pTooltip="Save description to current category"
+        ></p-button>
+      </div>
     </div>
   </div>
 

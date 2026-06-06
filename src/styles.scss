@@ -1,18 +1,417 @@
+@import "primeicons/primeicons.css";
+
+/* ==========================================================================
+   GLOBAL CSS VARIABLES (INDUSTRIAL GLASS THEME)
+   ========================================================================== */
+:root {
+  /* Brand Colors - Corporate Red */
+  --brand-primary: #d32f2f;
+  --brand-primary-hover: #b71c1c;
+  --brand-light: #fdeaea;
+  
+  /* Backgrounds & Surfaces (Light Mode) */
+  /* Darkened the main app background slightly to make pure white cards pop */
+  --bg-app: #e2e8f0;       
+  --bg-surface: rgba(255, 255, 255, 0.4);   /* Glass surface - reduced white */
+  --bg-card: #ffffff;                        /* Solid card background fallback */
+  --bg-hover: rgba(241, 245, 249, 0.8);
+  --glass-blur: blur(24px);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.8);
+  
+  /* Borders */
+  --border-light: #cbd5e1;
+  --border-medium: #94a3b8;
+  
+  /* Typography */
+  --font-main: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --text-main: #0f172a;    /* High contrast dark slate */
+  --text-muted: #475569;   /* Readable muted text */
+  --text-inverse: #ffffff;
+  
+  /* Shadows - Deep and Premium */
+  --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.15), 0 8px 16px -6px rgba(15, 23, 42, 0.1);
+  --shadow-floating: 0 20px 40px -8px rgba(15, 23, 42, 0.2);
+  
+  /* Status Colors */
+  --status-success: #16a34a;
+  --status-warning: #ea580c;
+  --status-error: #dc2626;
+  --status-info: #0284c7;
+
+  /* Static Background Gradient Colors */
+  --bg-gradient-start: #cbd5e1; /* Slate 300 */
+  --bg-gradient-end: #94a3b8;   /* Slate 400 */
+}
+
+[data-theme="dark"] {
+  --bg-app: #020617;       
+  --bg-surface: rgba(15, 23, 42, 0.65);   
+  --bg-card: #0f172a;
+  --bg-hover: rgba(30, 41, 59, 0.8);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  
+  --border-light: #1e293b;
+  --border-medium: #334155;
+  
+  --text-main: #f8fafc;    /* Very bright white for contrast */
+  --text-muted: #94a3b8;   
+  --text-inverse: #0f172a;
+
+  --icon-filter: brightness(0) invert(0.8);
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.6);
+  --shadow-floating: 0 20px 40px -8px rgba(0, 0, 0, 0.8);
+
+  --bg-gradient-start: #0f172a;
+  --bg-gradient-end: #020617;
+}
+
+/* ==========================================================================
+   BASE RESETS
+   ========================================================================== */
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: 'Inter', sans-serif;
-  background-color: #ffffff;
-  color: #334155; // Default slate color for text
+  font-family: var(--font-main);
+  
+  /* Static Gradient Background with Dynamic Tint Overlay */
+  background: radial-gradient(circle at top left, var(--status-tint, transparent), transparent 70%),
+              linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
   box-sizing: border-box;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  margin-top: 0;
+  letter-spacing: -0.02em;
+}
+
 a {
   text-decoration: none;
   color: inherit;
 }
+
+/* ==========================================================================
+   GLOBAL ANIMATION SYSTEM
+   ========================================================================== */
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-slide-up {
+  opacity: 0;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.animate-scale-in {
+  opacity: 0;
+  animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   GLOBAL PRIMENG OVERRIDES (To match Corporate Theme)
+   ========================================================================== */
+
+/* Buttons */
+.p-button {
+  transition: all 0.2s ease !important;
+  font-weight: 600 !important;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-info):not(.p-button-warning):not(.p-button-danger) {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: var(--text-inverse) !important;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-success):not(.p-button-info):not(.p-button-warning):not(.p-button-danger):hover {
+  background-color: var(--brand-primary-hover) !important;
+  border-color: var(--brand-primary-hover) !important;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Inputs & Forms */
+.p-inputtext, .p-textarea, textarea, input[type="text"], input[type="number"], select {
+  color: var(--text-main) !important;
+  font-weight: 600 !important;
+  border-color: var(--border-medium) !important;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s !important;
+}
+
+.p-inputtext:enabled:hover, .p-textarea:enabled:hover, input[type="text"]:enabled:hover {
+  border-color: var(--brand-primary) !important;
+}
+
+.p-inputtext:enabled:focus, .p-textarea:enabled:focus, input[type="text"]:enabled:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15) !important;
+}
+
+/* Dialogs */
+.p-dialog {
+  border-radius: 16px !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-floating) !important;
+  background: var(--bg-surface) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border) !important;
+}
+.p-dialog-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+  padding: 14px 20px !important;
+}
+.p-dialog-content {
+  background: transparent !important;
+  padding: 20px !important;
+}
+
+/* Global Glass Utility */
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  border-radius: 16px;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.glass-panel:hover {
+  box-shadow: var(--shadow-floating);
+}
+
+/* Custom Scrollbar for modern look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium); 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; 
+}
+
+/* ==========================================================================
+   GLOBAL PRIMENG DARK MODE OVERRIDES
+   ========================================================================== */
+
+/* p-table */
+.p-datatable {
+  background: transparent !important;
+}
+.p-datatable .p-datatable-table {
+  background: transparent !important;
+}
+.p-datatable .p-datatable-tbody > tr {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+.p-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background: var(--bg-hover) !important;
+}
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+[data-theme="light"] .p-datatable .p-datatable-tbody > tr:hover {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+.p-datatable .p-datatable-tbody > tr > td {
+  color: var(--text-main) !important;
+  border-color: var(--border-light) !important;
+}
+.p-datatable .p-datatable-thead > tr > th {
+  border-color: var(--border-light) !important;
+  background-color: var(--brand-primary) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+}
+
+/* p-paginator */
+.p-paginator {
+  background: transparent !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-light) !important;
+}
+.p-paginator .p-paginator-element {
+  color: var(--text-main) !important;
+}
+.p-paginator .p-paginator-element:hover {
+  background: var(--bg-hover) !important;
+}
+.p-paginator .p-paginator-page.p-highlight {
+  background: var(--brand-primary) !important;
+  color: #fff !important;
+  border-color: var(--brand-primary) !important;
+}
+
+/* p-menu (user dropdown) */
+.p-menu {
+  background: var(--bg-surface) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border) !important;
+  color: var(--text-main) !important;
+}
+.p-menu .p-menuitem-link {
+  color: var(--text-main) !important;
+}
+.p-menu .p-menuitem-link:hover {
+  background: var(--bg-hover) !important;
+}
+
+/* p-dialog header border fix for dark */
+[data-theme="dark"] .p-dialog-header {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+
+/* p-toast */
+.p-toast-message {
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+[data-theme="dark"] .p-inputtext,
+[data-theme="dark"] .p-textarea,
+[data-theme="dark"] textarea,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] select {
+  background: rgba(30, 41, 59, 0.85) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-medium) !important;
+}
+
+/* p-select / dropdown overlay */
+.p-select-overlay,
+.p-dropdown-panel {
+  background: var(--bg-surface) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border) !important;
+  color: var(--text-main) !important;
+}
+.p-select-overlay .p-select-option,
+.p-dropdown-panel .p-dropdown-item {
+  color: var(--text-main) !important;
+}
+.p-select-overlay .p-select-option:hover,
+.p-dropdown-panel .p-dropdown-item:hover {
+  background: var(--bg-hover) !important;
+}
+
+/* ==========================================================================
+   PRINT STYLES FOR REPORT DIALOG
+   ========================================================================== */
+@media print {
+  /* Crucial fix: PrimeNG locks body scrolling when dialog is open. We must unlock it for pagination! */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    color: #000 !important;
+  }
+  
+  /* Hide the main Angular app root completely */
+  app-root {
+    display: none !important;
+  }
+  
+  /* The p-dialog-mask is appended to body, so we make it static */
+  .p-dialog-mask {
+    position: static !important;
+    background-color: white !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Remove dialog styling (fixed positioning breaks pagination) */
+  .p-dialog {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-height: none !important;
+    margin: 0 !important;
+    transform: none !important;
+    position: static !important;
+    background: white !important;
+  }
+  
+  /* Allow content to flow naturally */
+  .p-dialog-content {
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+    height: auto !important;
+  }
+
+  /* Hide UI elements */
+  .p-dialog-header, 
+  .p-dialog-footer {
+    display: none !important;
+  }
+  
+  /* Prevent breaking sections */
+  .report-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .report-content, .report-content * {
+    color: #000 !important;
+  }
+
+  /* Preserve PrimeNG's native table layout but ensure borders and backgrounds print properly */
+  #printable-report .p-datatable {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  #printable-report .p-datatable .p-datatable-thead > tr > th,
+  #printable-report .p-datatable .p-datatable-tbody > tr > td,
+  #printable-report .p-datatable .p-datatable-wrapper {
+    border-color: #000 !important;
+  }
+
+  @page {
+    margin: 1cm;
+  }
+}
+
+

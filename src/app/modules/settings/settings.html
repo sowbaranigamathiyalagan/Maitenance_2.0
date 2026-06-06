@@ -1,1 +1,306 @@
-<p>settings works!</p>
+<p-toast position="top-right"></p-toast>
+
+<div class="settings-page">
+  <div class="page-header">
+    <div class="header-text">
+      <h1 class="title">Master Data Management</h1>
+      <p class="subtitle">Manage Users, Checklists, and other system data</p>
+    </div>
+    <div class="plant-badge" *ngIf="plantname">
+      <span class="badge-label">Plant</span>
+      <span class="badge-value">{{ plantname }}</span>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <!-- Settings Sidebar -->
+    <div class="settings-sidebar">
+      <div class="nav-item" [class.active]="activeTab === 'users'" (click)="switchTab('users')">
+        <i class="pi pi-users"></i>
+        <span>User Management</span>
+      </div>
+      <div class="nav-item" [class.active]="activeTab === 'checklist'" (click)="switchTab('checklist')">
+        <i class="pi pi-check-square"></i>
+        <span>Checklist Management</span>
+      </div>
+      <div class="nav-item" [class.active]="activeTab === 'spares'" (click)="switchTab('spares')">
+        <i class="pi pi-cog"></i>
+        <span>Spare Management</span>
+      </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="settings-content">
+
+      <!-- ========================================== -->
+      <!-- USERS TAB                                  -->
+      <!-- ========================================== -->
+      @if (activeTab === 'users') {
+        
+        <!-- LIST VIEW -->
+        @if (usersView === 'list') {
+          <div class="panel-header">
+            <div>
+              <h2>Users</h2>
+              <p>Manage all users in {{ plantname }}</p>
+            </div>
+            @if (isAdmin) {
+              <p-button label="Add User" icon="pi pi-plus" (click)="goToCreateUser()"></p-button>
+            }
+          </div>
+
+          <div class="panel-body">
+            @if (usersLoading) {
+              <div class="loader">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                <p>Loading users...</p>
+              </div>
+            } @else if (users.length === 0) {
+              <div class="empty-state">
+                <i class="pi pi-user-minus"></i>
+                <p>No users found.</p>
+              </div>
+            } @else {
+              <p-table [value]="users" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm custom-table">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>User Group</th>
+                    <th>Location</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-user let-i="rowIndex">
+                  <tr>
+                    <td>{{ i + 1 }}</td>
+                    <td>
+                      <div class="user-cell">
+                        <div class="user-avatar-mini">{{ (user.udfirstName || user.firstName || '?')[0].toUpperCase() }}</div>
+                        <span>{{ user.udfirstName || user.firstName }} {{ user.udlastName || user.lastName }}</span>
+                      </div>
+                    </td>
+                    <td>{{ user.udusername || user.username }}</td>
+                    <td>{{ user.udemail || user.email }}</td>
+                    <td>
+                      <span class="type-badge" [attr.data-type]="user.udtype || user.userType">
+                        {{ getUserTypeLabel(user.udtype || user.userType) }}
+                      </span>
+                    </td>
+                    <td>{{ user.udlocation || user.location || '—' }}</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            }
+          </div>
+        }
+
+        <!-- CREATE VIEW -->
+        @if (usersView === 'create') {
+          <div class="panel-header">
+            <div>
+              <h2>Create New User</h2>
+              <p>Fill in the details to add a new user</p>
+            </div>
+            <p-button label="Back to List" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (click)="goToListUsers()"></p-button>
+          </div>
+
+          <div class="panel-body form-panel">
+            <!-- Row 1 -->
+            <div class="form-row">
+              <div class="field">
+                <label>First Name <span class="req">*</span></label>
+                <input pInputText [(ngModel)]="createForm.firstName" placeholder="e.g. Prithivi" />
+              </div>
+              <div class="field">
+                <label>Last Name <span class="req">*</span></label>
+                <input pInputText [(ngModel)]="createForm.lastName" placeholder="e.g. Rajan" />
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="form-row">
+              <div class="field">
+                <label>Username <span class="req">*</span></label>
+                <input pInputText [(ngModel)]="createForm.username" placeholder="e.g. prithivi24" />
+              </div>
+              <div class="field">
+                <label>Email <span class="req">*</span></label>
+                <input pInputText type="email" [(ngModel)]="createForm.email" placeholder="e.g. user@motherson.com" />
+              </div>
+            </div>
+
+            <!-- Row 3 -->
+            <div class="form-row">
+              <div class="field">
+                <label>Password <span class="req">*</span></label>
+                <div class="pw-wrap">
+                  <input class="pw-input" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="createForm.password" placeholder="Enter password" />
+                  <button class="eye-btn" type="button" (click)="showPassword = !showPassword">
+                    <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Confirm Password <span class="req">*</span></label>
+                <div class="pw-wrap">
+                  <input class="pw-input" [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="createForm.confirmPassword" placeholder="Re-enter password" />
+                  <button class="eye-btn" type="button" (click)="showConfirmPassword = !showConfirmPassword">
+                    <i [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="form-row">
+              <div class="field">
+                <label>Location <span class="req">*</span></label>
+                <input pInputText [(ngModel)]="createForm.location" placeholder="e.g. MATE U3 EXPORT" />
+              </div>
+              <div class="field">
+                <label>User Group <span class="req">*</span></label>
+                <p-select
+                  [(ngModel)]="createForm.userType"
+                  [options]="userTypeOptions"
+                  optionLabel="label"
+                  placeholder="Select group"
+                ></p-select>
+              </div>
+            </div>
+
+            <!-- Chips -->
+            <div class="group-chips">
+              @for (opt of userTypeOptions; track opt.value) {
+                <span
+                  class="chip"
+                  [class.active]="createForm.userType?.value === opt.value"
+                  (click)="createForm.userType = opt"
+                >{{ opt.label }}</span>
+              }
+            </div>
+
+            <div class="form-actions">
+              <p-button [label]="fetchingCode ? 'Fetching Code...' : creating ? 'Creating...' : 'Create User'" 
+                        [icon]="(fetchingCode || creating) ? 'pi pi-spin pi-spinner' : 'pi pi-check'" 
+                        [disabled]="fetchingCode || creating" 
+                        (click)="submitCreateUser()">
+              </p-button>
+            </div>
+          </div>
+        }
+
+      }
+
+      <!-- ========================================== -->
+      <!-- CHECKLIST TAB                              -->
+      <!-- ========================================== -->
+      @if (activeTab === 'checklist') {
+        <div class="panel-header">
+          <div>
+            <h2>Checklist Management</h2>
+            <p>Manage standard operating procedures for mold check-in</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="add-bar">
+            <input pInputText [(ngModel)]="newCheckItem" placeholder="Enter new checklist item description..." style="flex: 1;" (keyup.enter)="addCheckItem()" />
+            <p-button label="Add Item" icon="pi pi-plus" [disabled]="!newCheckItem.trim() || addingCheckItem" (click)="addCheckItem()"></p-button>
+          </div>
+
+          @if (checklistLoading) {
+            <div class="loader">
+              <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+              <p>Loading items...</p>
+            </div>
+          } @else if (checkItems.length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-list"></i>
+              <p>No checklist items found. Add one above.</p>
+            </div>
+          } @else {
+            <p-table [value]="checkItems" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm custom-table">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 80px">ID</th>
+                  <th>Checklist Item</th>
+                  <th style="width: 120px; text-align: center;">Active</th>
+                  <th style="width: 100px; text-align: center;">Actions</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-item>
+                <tr>
+                  <td>#{{ item.id }}</td>
+                  <td class="wrap-text">{{ item.check_item }}</td>
+                  <td style="text-align: center;">
+                    <p-toggleSwitch [(ngModel)]="item.active" (onChange)="toggleCheckItem(item, $event)"></p-toggleSwitch>
+                  </td>
+                  <td style="text-align: center;">
+                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (click)="deleteCheckItem(item)" pTooltip="Delete Item"></p-button>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        </div>
+      }
+
+      <!-- ========================================== -->
+      <!-- SPARE MANAGEMENT TAB                       -->
+      <!-- ========================================== -->
+      @if (activeTab === 'spares') {
+        <div class="panel-header">
+          <div>
+            <h2>Spare Management</h2>
+            <p>Manage spare parts and item codes</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <p-button label="Download Template" icon="pi pi-download" severity="info" [outlined]="true" (click)="downloadCsvTemplate()" pTooltip="Download CSV Template"></p-button>
+            <input #csvInput type="file" accept=".csv" style="display: none;" (change)="onCsvSelect($event)" />
+            <p-button label="Upload CSV" icon="pi pi-file-excel" severity="success" [outlined]="true" (click)="csvInput.click()" [loading]="csvUploading"></p-button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="add-bar" style="display: flex; gap: 10px;">
+            <input pInputText [(ngModel)]="newSparePart.partName" placeholder="Enter Part Name..." style="flex: 1;" (keyup.enter)="addSparePart()" />
+            <input pInputText [(ngModel)]="newSparePart.itemcode" placeholder="Enter Item Code..." style="flex: 1;" (keyup.enter)="addSparePart()" />
+            <p-button label="Add Part" icon="pi pi-plus" [disabled]="!newSparePart.partName.trim() || !newSparePart.itemcode.trim() || addingSparePart" [loading]="addingSparePart" (click)="addSparePart()"></p-button>
+          </div>
+
+          @if (sparesLoading) {
+            <div class="loader">
+              <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+              <p>Loading spare parts...</p>
+            </div>
+          } @else if (sparesList.length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-box"></i>
+              <p>No spare parts found. Add one above or upload a CSV.</p>
+            </div>
+          } @else {
+            <p-table [value]="sparesList" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm custom-table">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 80px">#</th>
+                  <th>Part Name</th>
+                  <th>Item Code</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-item let-i="rowIndex">
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td class="wrap-text">{{ item.partName || item.part_name || item.name }}</td>
+                  <td>{{ item.itemcode || item.item_code || item.code }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

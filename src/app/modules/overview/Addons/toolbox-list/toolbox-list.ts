@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Intimation as IntimationService } from '../../../../core/services/intimation';
@@ -10,7 +10,7 @@ import { Intimation as IntimationService } from '../../../../core/services/intim
   templateUrl: './toolbox-list.html',
   styleUrls: ['./toolbox-list.scss']
 })
-export class ToolboxListComponent implements OnInit {
+export class ToolboxListComponent implements OnInit, OnDestroy {
 
   toolboxes: any[] = [];
   loading = false;
@@ -44,6 +44,10 @@ export class ToolboxListComponent implements OnInit {
     this.fetchToolStatus();
   }
 
+  ngOnDestroy() {
+    document.documentElement.style.removeProperty('--status-tint');
+  }
+
   fetchToolStatus() {
     this.loading = true;
     this.hasError = false;
@@ -53,6 +57,7 @@ export class ToolboxListComponent implements OnInit {
           this.toolboxes = res.tooldata || [];
           this.loading = false;
           this.hasError = false;
+          this.updateBackgroundTint();
           this.cdr.detectChanges();
         });
       },
@@ -96,6 +101,26 @@ export class ToolboxListComponent implements OnInit {
       warning: status === 'warning',
       ok: status === 'ok'
     };
+  }
+
+  updateBackgroundTint() {
+    if (!this.toolboxes || this.toolboxes.length === 0) {
+      document.documentElement.style.removeProperty('--status-tint');
+      return;
+    }
+    
+    const hasCritical = this.toolboxes.some(t => t.status === 'critical');
+    const hasWarning = this.toolboxes.some(t => t.status === 'warning');
+    
+    let tint = 'transparent';
+    if (hasCritical) {
+      tint = 'rgba(220, 38, 38, 0.08)'; // Subtle red
+    } else if (hasWarning) {
+      tint = 'rgba(234, 88, 12, 0.08)'; // Subtle orange/yellow
+    } else {
+      tint = 'rgba(22, 163, 74, 0.08)'; // Subtle green
+    }
+    document.documentElement.style.setProperty('--status-tint', tint);
   }
 
   get paginatedData() {

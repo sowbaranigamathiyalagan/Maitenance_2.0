@@ -51,11 +51,12 @@
           <td>{{ item.problem_observed }}</td>
           <td>{{ item.date_created | date: 'dd/MM/yyyy HH:mm' }}</td>
           <td class="action-cell">
-            <div class="action-buttons" style="display: flex; gap: 8px;">
+            <div class="action-buttons" style="display: flex; gap: 8px; justify-content: center; align-items: center;">
               @if (item.status === 'REQUESTED' || item.status === 'IN_PROGRESS') {
                 <p-button
                   label="Approve"
                   icon="pi pi-check"
+                  severity="success"
                   class="approve-btn"
                   (click)="approveRow(item, activeTab, 'APPROVED')"
                 ></p-button>
@@ -93,13 +94,13 @@
   >
     <div class="remarks-container" style="padding-top: 1rem;">
       <div class="field" style="margin-bottom: 1.5rem;">
-        <label for="remarks" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #444;">Remarks</label>
+        <label for="remarks" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Remarks</label>
         <textarea 
           id="remarks" 
           pTextarea 
           [(ngModel)]="approvalRemarks" 
           rows="4" 
-          style="width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px;"
+          style="width: 100%; border-radius: 8px; border: 1px solid var(--border-medium); padding: 10px; background: transparent; color: var(--text-main);"
           [placeholder]="approvalStatus === 'APPROVED' ? 'Enter approval remarks...' : 'Enter rejection reason...'"
         ></textarea>
       </div>
