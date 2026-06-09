@@ -67,6 +67,11 @@ export class Scanner implements AfterViewInit {
     corrective_action: '',
     broken_parts: [],
     spares_consumed: [],
+    why1: '',
+    why2: '',
+    why3: '',
+    why4: '',
+    why5: '',
   };
 
   constructor(
@@ -396,9 +401,19 @@ export class Scanner implements AfterViewInit {
 
     const actionPayload = {
       slip_id: this.toolInfo.slip_id,
-      ...this.actionData,
+      inspection_remarks: this.actionData.inspection_remarks,
+      repaired_by: this.actionData.repaired_by,
+      problem_cause: this.actionData.problem_cause,
+      corrective_action: this.actionData.corrective_action,
       broken_parts: validBrokenParts,
       spares_consumed: validSpares,
+      five_whys: {
+        why1: this.actionData.why1 || '',
+        why2: this.actionData.why2 || '',
+        why3: this.actionData.why3 || '',
+        why4: this.actionData.why4 || '',
+        why5: this.actionData.why5 || ''
+      }
     };
 
     // Sequentially execute: Checklist first, then Action Update
@@ -450,6 +465,11 @@ export class Scanner implements AfterViewInit {
       corrective_action: '',
       broken_parts: [this.createNewBrokenPart()],
       spares_consumed: [this.createNewSpare()],
+      why1: '',
+      why2: '',
+      why3: '',
+      why4: '',
+      why5: '',
     };
     this.focusInput();
   }

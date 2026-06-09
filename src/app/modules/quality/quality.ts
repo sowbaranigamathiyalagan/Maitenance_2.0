@@ -103,15 +103,15 @@ export class Quality implements OnInit {
   }
 
   approveRow(rowData: any, tab: string, status: 'APPROVED' | 'REJECTED' = 'APPROVED') {
-    if (tab === 'awaiting') {
-      this.selectedRow = rowData;
-      this.selectedTab = tab;
-      this.approvalStatus = status;
-      this.approvalRemarks = status === 'APPROVED' ? 'Parts OK' : 'Parts Rejected';
-      this.showRemarksPopup = true;
+    this.selectedRow = rowData;
+    this.selectedTab = tab;
+    this.approvalStatus = status;
+    if (tab === 'approve') {
+      this.approvalRemarks = 'Pre-QA Approved';
     } else {
-      this.confirmApproval(rowData, tab, '', 'APPROVED');
+      this.approvalRemarks = status === 'APPROVED' ? 'Parts OK' : 'Parts Rejected';
     }
+    this.showRemarksPopup = true;
   }
 
   confirmApproval(rowData: any, tab: string, remarks: string, status: 'APPROVED' | 'REJECTED') {
@@ -121,6 +121,7 @@ export class Quality implements OnInit {
       payload = {
         slip_id: rowData.id,
         stage: 'PRE_QA',
+        remarks: remarks || 'Pre-QA Approved'
       };
     } else {
       payload = {

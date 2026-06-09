@@ -132,4 +132,29 @@ export class Intimation {
     formData.append('file', file);
     return this.http.post(`${this.baseUrl}/api/spares/add`, formData);
   }
+
+  // Dashboard API's
+  getDashboardSummary(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/dashboard/summary`);
+  }
+
+  getDashboardToolCount(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/dashboard/tool-count`);
+  }
+
+  getDashboardMonthlyTrend(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/dashboard/monthly-trend`);
+  }
+
+  getDashboardRecentActivities(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/dashboard/recent-activities`);
+  }
+
+  getDashboardMaintenanceDuration(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/dashboard/maintenance-duration-report`);
+  }
+
+  getDashboardWeeklyActivity(type: string = 'TOTAL'): Observable<any> {
+    return this.http.get(`${this.baseUrl}/api/dashboard/weekly-maintenance-activity?type=${type}`);
+  }
 }

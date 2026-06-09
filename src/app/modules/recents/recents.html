@@ -77,39 +77,67 @@
       <hr/>
     </div>
 
-    <div class="report-section">
+    <div class="report-section" *ngIf="selectedReport.tool_information">
       <h3>Tool Information</h3>
       <div class="grid-layout">
-        <div><strong>Tool Code:</strong> {{ selectedReport.tool_information?.tool_code }}</div>
-        <div><strong>Machine No:</strong> {{ selectedReport.tool_information?.machine_no }}</div>
-        <div><strong>Mold No:</strong> {{ selectedReport.tool_information?.mold_no }}</div>
-        <div><strong>Mold Name:</strong> {{ selectedReport.tool_information?.mold_name }}</div>
-        <div><strong>Material Name:</strong> {{ selectedReport.tool_information?.material_name }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_information.tool_code)"><strong>Tool Code:</strong> {{ selectedReport.tool_information.tool_code }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_information.machine_no)"><strong>Machine No:</strong> {{ selectedReport.tool_information.machine_no }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_information.mold_no)"><strong>Mold No:</strong> {{ selectedReport.tool_information.mold_no }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_information.mold_name)"><strong>Mold Name:</strong> {{ selectedReport.tool_information.mold_name }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_information.material_name)"><strong>Material Name:</strong> {{ selectedReport.tool_information.material_name }}</div>
       </div>
     </div>
 
-    <div class="report-section">
+    <div class="report-section" *ngIf="selectedReport.intimation_details">
       <h3>Intimation Details</h3>
       <div class="grid-layout">
-        <div><strong>Category:</strong> {{ selectedReport.intimation_details?.category }}</div>
-        <div><strong>Department:</strong> {{ selectedReport.intimation_details?.department }}</div>
-        <div><strong>Shift:</strong> {{ selectedReport.intimation_details?.shift }}</div>
-        <div><strong>Problem Observed:</strong> {{ selectedReport.intimation_details?.problem_observed }}</div>
-        <div><strong>Date & Time:</strong> {{ selectedReport.intimation_details?.date }} {{ selectedReport.intimation_details?.time }}</div>
-        <div><strong>Handed Over By:</strong> {{ selectedReport.intimation_details?.handed_over_by }}</div>
-        <div><strong>Verified By QA:</strong> {{ selectedReport.intimation_details?.verified_by_qa }}</div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.category)"><strong>Category:</strong> {{ selectedReport.intimation_details.category }}</div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.department)"><strong>Department:</strong> {{ selectedReport.intimation_details.department }}</div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.shift)"><strong>Shift:</strong> {{ selectedReport.intimation_details.shift }}</div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.problem_observed)"><strong>Problem Observed:</strong> {{ selectedReport.intimation_details.problem_observed }}</div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.date) || hasValue(selectedReport.intimation_details.time)">
+          <strong>Date & Time:</strong> {{ selectedReport.intimation_details.date }} {{ selectedReport.intimation_details.time }}
+        </div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.handed_over_by)"><strong>Handed Over By:</strong> {{ selectedReport.intimation_details.handed_over_by }}</div>
+        <div *ngIf="hasValue(selectedReport.intimation_details.verified_by_qa)"><strong>Verified By QA:</strong> {{ selectedReport.intimation_details.verified_by_qa }}</div>
       </div>
     </div>
 
-    <div class="report-section">
+    <div class="report-section" *ngIf="selectedReport.tool_room_action">
       <h3>Tool Room Action</h3>
       <div class="grid-layout">
-        <div><strong>Received By:</strong> {{ selectedReport.tool_room_action?.received_by }}</div>
-        <div><strong>Repaired By:</strong> {{ selectedReport.tool_room_action?.repaired_by }}</div>
-        <div><strong>Repair Time:</strong> {{ selectedReport.tool_room_action?.repair_time }}</div>
-        <div><strong>Problem Cause:</strong> {{ selectedReport.tool_room_action?.problem_cause }}</div>
-        <div><strong>Corrective Action:</strong> {{ selectedReport.tool_room_action?.corrective_action }}</div>
-        <div><strong>Parts Replaced:</strong> {{ selectedReport.tool_room_action?.parts_replaced }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.received_by)"><strong>Received By:</strong> {{ selectedReport.tool_room_action.received_by }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.repaired_by)"><strong>Repaired By:</strong> {{ selectedReport.tool_room_action.repaired_by }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.repair_time)"><strong>Repair Time:</strong> {{ selectedReport.tool_room_action.repair_time }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.problem_cause)"><strong>Problem Cause:</strong> {{ selectedReport.tool_room_action.problem_cause }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.corrective_action)"><strong>Corrective Action:</strong> {{ selectedReport.tool_room_action.corrective_action }}</div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.parts_replaced)"><strong>Parts Replaced:</strong> {{ selectedReport.tool_room_action.parts_replaced }}</div>
+      </div>
+    </div>
+
+    <div class="report-section" *ngIf="selectedReport.tool_room_action?.five_whys && (hasValue(selectedReport.tool_room_action.five_whys.why1) || hasValue(selectedReport.tool_room_action.five_whys.why2) || hasValue(selectedReport.tool_room_action.five_whys.why3) || hasValue(selectedReport.tool_room_action.five_whys.why4) || hasValue(selectedReport.tool_room_action.five_whys.why5))">
+      <h3>5 Why Analysis (Root Cause)</h3>
+      <div class="why-analysis-display" style="display: flex; flex-direction: column; gap: 10px; padding: 5px 0;">
+        <div *ngIf="hasValue(selectedReport.tool_room_action.five_whys.why1)" style="display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem;">
+          <strong style="flex-shrink: 0; min-width: 65px;">Why 1:</strong>
+          <span style="word-break: break-word; overflow-wrap: break-word;">{{ selectedReport.tool_room_action.five_whys.why1 }}</span>
+        </div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.five_whys.why2)" style="display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem;">
+          <strong style="flex-shrink: 0; min-width: 65px;">Why 2:</strong>
+          <span style="word-break: break-word; overflow-wrap: break-word;">{{ selectedReport.tool_room_action.five_whys.why2 }}</span>
+        </div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.five_whys.why3)" style="display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem;">
+          <strong style="flex-shrink: 0; min-width: 65px;">Why 3:</strong>
+          <span style="word-break: break-word; overflow-wrap: break-word;">{{ selectedReport.tool_room_action.five_whys.why3 }}</span>
+        </div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.five_whys.why4)" style="display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem;">
+          <strong style="flex-shrink: 0; min-width: 65px;">Why 4:</strong>
+          <span style="word-break: break-word; overflow-wrap: break-word;">{{ selectedReport.tool_room_action.five_whys.why4 }}</span>
+        </div>
+        <div *ngIf="hasValue(selectedReport.tool_room_action.five_whys.why5)" style="display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem;">
+          <strong style="flex-shrink: 0; min-width: 65px;">Why 5:</strong>
+          <span style="word-break: break-word; overflow-wrap: break-word;">{{ selectedReport.tool_room_action.five_whys.why5 }}</span>
+        </div>
       </div>
     </div>
     
@@ -118,9 +146,9 @@
       <p-table [value]="selectedReport.broken_parts" styleClass="p-datatable-sm p-datatable-gridlines">
         <ng-template pTemplate="header">
           <tr>
-            <th>Part Name</th>
-            <th>Part No</th>
-            <th>Total Broken</th>
+            <th style="width: 50%;">Part Name</th>
+            <th style="width: 30%;">Part No</th>
+            <th style="width: 20%;">Total Broken</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-part>
@@ -138,8 +166,8 @@
       <p-table [value]="selectedReport.spares_consumed" styleClass="p-datatable-sm p-datatable-gridlines">
         <ng-template pTemplate="header">
           <tr>
-            <th>Spare Item / Code</th>
-            <th>Quantity Consumed</th>
+            <th style="width: 70%;">Spare Item / Code</th>
+            <th style="width: 30%;">Quantity Consumed</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-spare>
@@ -156,9 +184,9 @@
       <p-table [value]="selectedReport.maintenance_checklist.items" styleClass="p-datatable-sm p-datatable-gridlines">
         <ng-template pTemplate="header">
           <tr>
-            <th>Item Name</th>
-            <th>Observation</th>
-            <th>Remarks</th>
+            <th style="width: 45%;">Item Name</th>
+            <th style="width: 20%;">Observation</th>
+            <th style="width: 35%;">Remarks</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
@@ -176,14 +204,14 @@
       </div>
     </div>
 
-    <div class="report-section">
+    <div class="report-section" *ngIf="selectedReport.hod_approval || selectedReport.final_qa">
       <h3>Approvals & Verification</h3>
       <div class="grid-layout">
-        <div><strong>HOD Approved By:</strong> {{ selectedReport.hod_approval?.approved_by }}</div>
-        <div><strong>HOD Remarks:</strong> {{ selectedReport.hod_approval?.remarks }}</div>
-        <div><strong>Final QA Checked By:</strong> {{ selectedReport.final_qa?.checked_by }}</div>
-        <div><strong>QA Status:</strong> {{ selectedReport.final_qa?.status }}</div>
-        <div><strong>QA Remarks:</strong> {{ selectedReport.final_qa?.remarks }}</div>
+        <div *ngIf="hasValue(selectedReport.hod_approval?.approved_by)"><strong>HOD Approved By:</strong> {{ selectedReport.hod_approval?.approved_by }}</div>
+        <div *ngIf="hasValue(selectedReport.hod_approval?.remarks)"><strong>HOD Remarks:</strong> {{ selectedReport.hod_approval?.remarks }}</div>
+        <div *ngIf="hasValue(selectedReport.final_qa?.checked_by)"><strong>Final QA Checked By:</strong> {{ selectedReport.final_qa?.checked_by }}</div>
+        <div *ngIf="hasValue(selectedReport.final_qa?.status)"><strong>QA Status:</strong> {{ selectedReport.final_qa?.status }}</div>
+        <div *ngIf="hasValue(selectedReport.final_qa?.remarks)"><strong>QA Remarks:</strong> {{ selectedReport.final_qa?.remarks }}</div>
       </div>
     </div>
   </div>

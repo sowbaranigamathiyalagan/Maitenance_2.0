@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
+import { SelectModule } from 'primeng/select';
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+import { Intimation as IntimationService } from '../../core/services/intimation';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ChartModule, TableModule],
+  imports: [CommonModule, RouterModule, ChartModule, TableModule, SelectModule, FormsModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
@@ -21,37 +25,152 @@ export class DashboardComponent implements OnInit {
   lineData: any;
   lineOptions: any;
 
-  recentActivity = [
-    { toolCode: 'T0025', action: 'Checked in for Preventive Maintenance', date: '02/04/25' },
-    { toolCode: 'T0026', action: 'Checked in for Breakdown', date: '01/03/25' },
-    { toolCode: 'T0027', action: 'Requested for P/M', date: '03/02/25' },
-    { toolCode: 'T0028', action: 'Requested for B/M', date: '05/02/25' },
-    { toolCode: 'T0029', action: 'Checked in for Breakdown Maintenance', date: '05/04/25' },
-    { toolCode: 'T0020', action: 'Checked in PM', date: '05/02/25' }
-  ];
+  recentActivity: any[] = [];
+  recentTools: any[] = [];
 
-  recentTools = [
-    { tool: 'T0015', status: 'Requested', category: 'PM', checkIn: '10/11/25', checkOut: '12/11/25', duration: '1 day' },
-    { tool: 'T0018', status: 'Completed', category: 'B/D', checkIn: '10/11/25', checkOut: '12/11/25', duration: '1 day' },
-    { tool: 'T0095', status: 'Rejected', category: 'Repair', checkIn: '10/11/25', checkOut: '12/11/25', duration: '1 day' },
-    { tool: 'T0010', status: 'In Progress', category: 'B/D', checkIn: '10/11/25', checkOut: '12/11/25', duration: '1 day' },
-    { tool: 'T0016', status: 'Completed', category: 'Repair', checkIn: '10/11/25', checkOut: '12/11/25', duration: '1 day' },
-    { tool: 'T0014', status: 'Rejected', category: 'PM', checkIn: '10/11/25', checkOut: '12/11/25', duration: '1 day' }
-  ];
+  // Top Metrics
+  totalTools: number = 0;
+  inMaintenance: number = 0;
+  awaiting: number = 0;
+  completed: number = 0;
+  mttr: number = 0;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  // Chart configuration constants
+  cBlue = '#3b82f6';
+  cOrange = '#f97316';
+  cLightOrange = '#fcd34d';
+  cTeal = '#4ade80';
+  cRed = '#ef4444';
+
+  // Filter types for the weekly chart
+  weeklyFilterOptions = [
+    { label: 'TOTAL', value: 'TOTAL' },
+    { label: 'PM', value: 'PM' },
+    { label: 'BD', value: 'BD' },
+    { label: 'REPAIR', value: 'REPAIR' },
+    { label: 'MODIFY', value: 'MODIFY' }
+  ];
+  selectedWeeklyFilter: string = 'TOTAL';
+
+  constructor(private cdr: ChangeDetectorRef, private intimationService: IntimationService) {}
 
   ngOnInit() {
-    this.initCharts();
-    
-    // Sometimes Chart.js needs a tick to render properly in PrimeNG standalone
-    setTimeout(() => {
-      this.initCharts();
-      this.cdr.detectChanges();
-    }, 100);
+    this.initChartOptions();
+    this.fetchDashboardData();
   }
 
-  initCharts() {
+  fetchDashboardData() {
+    forkJoin({
+      summary: this.intimationService.getDashboardSummary(),
+      toolCount: this.intimationService.getDashboardToolCount(),
+      monthlyTrend: this.intimationService.getDashboardMonthlyTrend(),
+      recentActivities: this.intimationService.getDashboardRecentActivities(),
+      durationReport: this.intimationService.getDashboardMaintenanceDuration(),
+      weeklyActivity: this.intimationService.getDashboardWeeklyActivity(this.selectedWeeklyFilter)
+    }).subscribe({
+      next: (data) => {
+        // Summary
+        this.totalTools = data.summary.total_tools || 0;
+        this.inMaintenance = data.summary.in_maintenance || 0;
+        this.awaiting = data.summary.awaiting || 0;
+        this.completed = data.summary.completed || 0;
+        this.mttr = data.summary.mttr || 0;
+
+        // Tool Count (Donut)
+        if (data.toolCount && data.toolCount.distribution) {
+          const dist = data.toolCount.distribution;
+          this.donutData = {
+            labels: dist.map((d: any) => d.label),
+            datasets: [{
+              data: dist.map((d: any) => d.count),
+              backgroundColor: [this.cOrange, this.cLightOrange, this.cBlue, this.cTeal, this.cRed],
+              hoverBackgroundColor: [this.cOrange, this.cLightOrange, this.cBlue, this.cTeal, this.cRed],
+              borderWidth: 0
+            }]
+          };
+        }
+
+        // Monthly Trend (Bar)
+        if (Array.isArray(data.monthlyTrend)) {
+          this.barData = {
+            labels: data.monthlyTrend.map((d: any) => d.month),
+            datasets: [
+              {
+                label: 'PM',
+                data: data.monthlyTrend.map((d: any) => d.PM),
+                backgroundColor: this.cBlue,
+                borderRadius: 2
+              },
+              {
+                label: 'BD',
+                data: data.monthlyTrend.map((d: any) => d.BD),
+                backgroundColor: this.cTeal,
+                borderRadius: 2
+              }
+            ]
+          };
+        }
+
+        // Recent Activities
+        if (data.recentActivities && data.recentActivities.activities) {
+          this.recentActivity = data.recentActivities.activities;
+        }
+
+        // Maintenance Duration Report
+        if (data.durationReport && data.durationReport.duration_report) {
+          this.recentTools = data.durationReport.duration_report;
+        }
+
+        // Weekly Maintenance Activity (Line)
+        if (data.weeklyActivity && data.weeklyActivity.activity) {
+          this.updateLineChartData(data.weeklyActivity.activity);
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load dashboard data', err);
+      }
+    });
+  }
+
+  onWeeklyFilterChange() {
+    this.intimationService.getDashboardWeeklyActivity(this.selectedWeeklyFilter).subscribe({
+      next: (data) => {
+        if (data && data.activity) {
+          this.updateLineChartData(data.activity);
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load weekly activity', err);
+      }
+    });
+  }
+
+  updateLineChartData(activity: any[]) {
+    this.lineData = {
+      labels: activity.map((d: any) => d.date),
+      datasets: [
+        {
+          label: `Weekly Activity (${this.selectedWeeklyFilter})`,
+          data: activity.map((d: any) => d.count),
+          fill: true,
+          borderColor: this.cRed,
+          borderWidth: 3,
+          tension: 0.4,
+          backgroundColor: 'rgba(239, 68, 68, 0.15)',
+          pointRadius: 5,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: this.cRed,
+          pointBorderWidth: 2,
+          pointHoverRadius: 7
+        }
+      ]
+    };
+  }
+
+  initChartOptions() {
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-main');
     const textColorSecondary = documentStyle.getPropertyValue('--text-muted');
@@ -108,7 +227,13 @@ export class DashboardComponent implements OnInit {
 
     this.barOptions = {
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: { 
+        legend: { 
+          display: true,
+          position: 'top',
+          labels: { color: textColor }
+        } 
+      },
       scales: {
         x: { ticks: { color: textColorSecondary }, grid: { display: false } },
         y: { ticks: { color: textColorSecondary, stepSize: 20 }, grid: { color: surfaceBorder } }
@@ -123,25 +248,40 @@ export class DashboardComponent implements OnInit {
           data: [4000, 2000, 400, 800, 500, 1500, 2500, 1900],
           fill: true,
           borderColor: cRed,
-          tension: 0.1, // angular lines in the screenshot, not smooth
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          pointRadius: 0
+          borderWidth: 3,
+          tension: 0.4,
+          backgroundColor: 'rgba(239, 68, 68, 0.15)',
+          pointRadius: 5,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: cRed,
+          pointBorderWidth: 2,
+          pointHoverRadius: 7
         }
       ]
     };
 
     this.lineOptions = {
       maintainAspectRatio: false,
+      layout: {
+        padding: { top: 10 }
+      },
       plugins: { legend: { display: false } },
       scales: {
-        x: { display: false, grid: { display: false } },
+        x: { 
+          display: true, 
+          ticks: { color: textColorSecondary, font: { weight: '600' } },
+          grid: { display: false } 
+        },
         y: { 
+          beginAtZero: true,
+          suggestedMax: 5,
           ticks: { 
-            color: textColorSecondary, 
-            callback: (v: any) => v === 0 ? '0' : (v / 1000) + 'k',
-            stepSize: 1000
+            color: textColorSecondary,
+            stepSize: 1,
+            font: { weight: '600' }
           }, 
-          grid: { color: surfaceBorder } 
+          border: { display: false },
+          grid: { color: surfaceBorder, drawBorder: false } 
         }
       }
     };

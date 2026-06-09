@@ -42,7 +42,9 @@
             <h2 class="tool-code">{{ toolInfo.tool_code }}</h2>
             <p class="tool-name">{{ toolInfo.toolName }}</p>
           </div>
-          <p-button label="Intimation Slip" icon="pi pi-file" class="slip-btn" size="small" (click)="showSlip()"></p-button>
+          @if (!toolInfo.suggested_action || toolInfo.suggested_action === 'NONE' || toolInfo.suggested_action === 'TOOL_REWORK') {
+            <p-button label="Intimation Slip" icon="pi pi-file" class="slip-btn" size="small" (click)="showSlip()"></p-button>
+          }
         </div>
 
         <div class="divider"></div>
@@ -215,19 +217,13 @@
           <label>Corrective Action <span style="color: var(--status-error);">*</span></label>
           <input pInputText [(ngModel)]="actionData.corrective_action" />
         </div>
-        <div class="field full-width">
-          <label>Marking Sheet <span style="color: var(--status-error);">*</span></label>
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <input #markingSheetInput type="file" class="p-inputtext" accept=".jpeg,.jpg,.png" (change)="onMarkingSheetSelect($event)" style="flex: 1; padding: 10px; cursor: pointer;" />
-            <p-button *ngIf="markingSheetFile" icon="pi pi-times" severity="danger" [outlined]="true" (click)="clearMarkingSheet()" pTooltip="Clear Selected Image"></p-button>
-          </div>
-        </div>
       </div>
 
       <p-tabs [(value)]="activeActionTabIndex" (valueChange)="onActionTabChange($event)" styleClass="action-tabs">
         <p-tablist>
             <p-tab value="0">Broken Parts</p-tab>
             <p-tab value="1">Spares Consumed</p-tab>
+            <p-tab value="2">5 Why Analysis</p-tab>
         </p-tablist>
         
         <p-tabpanels>
@@ -293,8 +289,47 @@
             </div>
           </div>
         </p-tabpanel>
+
+        <p-tabpanel value="2">
+          <div class="broken-parts-section">
+            <div class="section-header">
+              <h3>5 Why Analysis</h3>
+            </div>
+
+            <div class="why-analysis-list" style="display: flex; flex-direction: column; gap: 16px; margin-top: 15px;">
+              <div class="why-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-weight: 700; font-size: 14px; color: var(--text-main);">1. Why? (Immediate Cause)</label>
+                <input pInputText [(ngModel)]="actionData.why1" placeholder="Why did the problem occur?" style="width: 100%;" />
+              </div>
+              <div class="why-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-weight: 700; font-size: 14px; color: var(--text-main);">2. Why?</label>
+                <input pInputText [(ngModel)]="actionData.why2" placeholder="Why did that occur?" style="width: 100%;" />
+              </div>
+              <div class="why-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-weight: 700; font-size: 14px; color: var(--text-main);">3. Why?</label>
+                <input pInputText [(ngModel)]="actionData.why3" placeholder="Why did that occur?" style="width: 100%;" />
+              </div>
+              <div class="why-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-weight: 700; font-size: 14px; color: var(--text-main);">4. Why?</label>
+                <input pInputText [(ngModel)]="actionData.why4" placeholder="Why did that occur?" style="width: 100%;" />
+              </div>
+              <div class="why-row" style="display: flex; flex-direction: column; gap: 6px;">
+                <label style="font-weight: 700; font-size: 14px; color: var(--text-main);">5. Why? (Root Cause)</label>
+                <input pInputText [(ngModel)]="actionData.why5" placeholder="Why did that occur? (Identify root cause)" style="width: 100%;" />
+              </div>
+            </div>
+          </div>
+        </p-tabpanel>
         </p-tabpanels>
       </p-tabs>
+
+      <div class="field">
+        <label>Marking Sheet <span style="color: var(--status-error);">*</span></label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input #markingSheetInput type="file" class="p-inputtext" accept=".jpeg,.jpg,.png" (change)="onMarkingSheetSelect($event)" style="flex: 1; padding: 10px; cursor: pointer;" />
+          <p-button *ngIf="markingSheetFile" icon="pi pi-times" severity="danger" [outlined]="true" (click)="clearMarkingSheet()" pTooltip="Clear Selected Image"></p-button>
+        </div>
+      </div>
 
       <div class="modal-footer">
         <p-button label="Submit & Complete Check-Out" (click)="submitCombinedCheckOut()" [disabled]="submittingCheckOut" [icon]="submittingCheckOut ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></p-button>

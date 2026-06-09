@@ -4,19 +4,23 @@
   <div class="metrics-row">
     <div class="metric-card glass-panel">
       <div class="m-title">Total Tools</div>
-      <div class="m-val text-red">456</div>
+      <div class="m-val text-red">{{ totalTools }}</div>
     </div>
     <div class="metric-card glass-panel">
       <div class="m-title">In Maintenance</div>
-      <div class="m-val text-red">234</div>
+      <div class="m-val text-red">{{ inMaintenance }}</div>
     </div>
     <div class="metric-card glass-panel">
-      <div class="m-title">Tools Await</div>
-      <div class="m-val text-red">567</div>
+      <div class="m-title">Maintenance Queue</div>
+      <div class="m-val text-red">{{ awaiting }}</div>
     </div>
     <div class="metric-card glass-panel">
       <div class="m-title">Tools Completed</div>
-      <div class="m-val text-red">789</div>
+      <div class="m-val text-red">{{ completed }}</div>
+    </div>
+    <div class="metric-card glass-panel">
+      <div class="m-title">MTTR</div>
+      <div class="m-val text-red">{{ mttr | number:'1.0-2' }}h</div>
     </div>
   </div>
 
@@ -26,7 +30,7 @@
     <div class="chart-card glass-panel donut-card">
       <div class="c-title">Tool Count</div>
       <div class="chart-wrapper">
-        <p-chart type="doughnut" [data]="donutData" [options]="donutOptions"></p-chart>
+        <p-chart type="doughnut" [data]="donutData" [options]="donutOptions" width="100%" height="100%"></p-chart>
       </div>
     </div>
 
@@ -34,18 +38,20 @@
     <div class="chart-card glass-panel bar-card">
       <div class="c-title">Maintenance Trend</div>
       <div class="chart-wrapper bar-wrap">
-        <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+        <p-chart type="bar" [data]="barData" [options]="barOptions" width="100%" height="100%"></p-chart>
       </div>
     </div>
 
     <!-- Recent Activity -->
     <div class="chart-card glass-panel activity-card">
       <div class="c-title">Recent Activity</div>
-      <div class="activity-list">
-        <div class="act-item" *ngFor="let act of recentActivity">
-          <div class="act-dot"></div>
-          <div class="act-text">
-            <span class="act-code">{{act.toolCode}}</span> {{act.action}} - <span class="act-date">{{act.date}}</span>
+      <div class="activity-marquee">
+        <div class="activity-list">
+          <div class="act-item" *ngFor="let act of recentActivity">
+            <div class="act-dot"></div>
+            <div class="act-text">
+              {{ act.text }}
+            </div>
           </div>
         </div>
       </div>
@@ -56,7 +62,7 @@
   <div class="bottom-row">
     <!-- Table -->
     <div class="table-card glass-panel">
-      <p-table [value]="recentTools" styleClass="dashboard-table">
+      <p-table [value]="recentTools" styleClass="dashboard-table" [scrollable]="true" scrollHeight="flex">
         <ng-template pTemplate="header">
           <tr>
             <th>Tool</th>
@@ -72,8 +78,8 @@
             <td class="font-bold">{{tool.tool}}</td>
             <td>{{tool.status}}</td>
             <td [ngClass]="{'font-bold': tool.category !== 'PM'}">{{tool.category}}</td>
-            <td>{{tool.checkIn}}</td>
-            <td>{{tool.checkOut}}</td>
+            <td>{{tool.check_in}}</td>
+            <td>{{tool.check_out}}</td>
             <td>{{tool.duration}}</td>
           </tr>
         </ng-template>
@@ -84,10 +90,18 @@
     <div class="chart-card glass-panel line-card">
       <div class="c-header-flex">
         <div class="c-title">Weekly Maintenance</div>
-        <button class="pm-btn">PM</button>
+        <p-select 
+          [options]="weeklyFilterOptions" 
+          [(ngModel)]="selectedWeeklyFilter" 
+          (ngModelChange)="onWeeklyFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{'min-width': '120px'}"
+          styleClass="p-dropdown-sm">
+        </p-select>
       </div>
       <div class="chart-wrapper line-wrap">
-        <p-chart type="line" [data]="lineData" [options]="lineOptions"></p-chart>
+        <p-chart type="line" [data]="lineData" [options]="lineOptions" width="100%" height="100%"></p-chart>
       </div>
     </div>
   </div>

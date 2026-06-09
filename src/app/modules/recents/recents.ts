@@ -21,6 +21,15 @@ export class Recents implements OnInit {
   displayReportModal: boolean = false;
   selectedReport: any = null;
 
+  hasValue(val: any): boolean {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      return trimmed !== '' && trimmed.toLowerCase() !== 'none' && trimmed.toLowerCase() !== 'null';
+    }
+    return true;
+  }
+
   constructor(
     private intimationService: IntimationService,
     private messageService: MessageService,

@@ -310,6 +310,14 @@
   flex-direction: column;
   gap: 32px;
 
+  > .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    label { font-weight: 700; color: var(--text-main); font-size: 14px; }
+  }
+
   .form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
