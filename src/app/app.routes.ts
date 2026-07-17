@@ -1,16 +1,13 @@
+﻿import { PMSchedule } from './modules/pm-schedule/pm-schedule';
 import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login';
 import { Overview } from './modules/overview/overview';
-import { Reports } from './modules/reports/reports';
 import { Scanner } from './modules/scanner/scanner';
-import { Quality } from './modules/quality/quality';
-import { HodApproval } from './modules/hod-approval/hod-approval';
 import { LayoutComponent } from './layout/layout/layout';
 import { authGuard, loginGuard } from './core/guards/auth.guard';
 import { Recents } from './modules/recents/recents';
 import { Settings } from './modules/settings/settings';
-
-
+import { SignOffComponent } from './modules/sign-off/sign-off';
 import { DashboardComponent } from './modules/dashboard/dashboard';
 
 export const routes: Routes = [
@@ -25,10 +22,9 @@ export const routes: Routes = [
       { path: 'overview', component: Overview },
       { path: 'scanner', component: Scanner },
       { path: 'recents', component: Recents },
-      { path: 'quality', component: Quality },
-      { path: 'hod-approval', component: HodApproval },
-      { path: 'settings', component: Settings }
+      { path: 'settings', component: Settings },
+      { path: 'pm-schedule', component: PMSchedule },
+      { path: 'sign-off', component: SignOffComponent }
     ]
   }
-
 ];

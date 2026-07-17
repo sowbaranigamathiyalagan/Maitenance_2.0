@@ -246,6 +246,28 @@
   .loc-icon { font-size: 11px; }
 }
 
+/* Maintenance category pill */
+.card-maint-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #020405; /* soft premium blue text */
+  background: rgba(30, 136, 229, 0.08); /* soft blue background */
+  border: 1px solid rgba(30, 136, 229, 0.18);
+  padding: 3px 8px;
+  border-radius: 99px;
+  margin-top: 6px;
+  width: fit-content;
+
+  .maint-icon {
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 /* Shot progress */
 .shot-info {
   display: flex;
@@ -536,10 +558,10 @@
   }
 
   &.done {
-    border-color: rgba(22, 163, 74, 0.5);
-    background: rgba(22, 163, 74, 0.08);
-    .step-icon { color: #16a34a; }
-    .step-label { color: #16a34a; }
+    border-color: rgba(0, 235, 86, 0.87);
+    background: rgba(3, 201, 76, 0.801);
+    .step-icon { color: #09e459; }
+    .step-label { color: hsl(142, 89%, 41%); }
   }
 
   &.active {
@@ -551,7 +573,7 @@
   }
 
   &.pending {
-    opacity: 0.5;
+    opacity: 0.45;
     .step-label { color: var(--text-muted); }
   }
 }
@@ -560,7 +582,7 @@
   font-size: 14px;
   margin: 3px 0;
   color: var(--border-medium);
-  &.done   { color: #16a34a; }
+  &.done   { color: #0ae45a; }
   &.active { color: #1976d2; }
 }
 

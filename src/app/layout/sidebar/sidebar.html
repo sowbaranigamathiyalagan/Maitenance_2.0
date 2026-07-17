@@ -1,4 +1,4 @@
-<p-toast position="top-right"></p-toast>
+﻿<p-toast position="top-right"></p-toast>
 
 <div class="sidebar">
 
@@ -20,13 +20,13 @@
     <div class="menu-item" routerLink="/recents" routerLinkActive="active" pTooltip="Recent" tooltipPosition="right">
       <img src="assets/sidebar/reports.svg" />
     </div>
-
-    <div class="menu-item" *ngIf="isQA" routerLink="/quality" routerLinkActive="active" pTooltip="Quality" tooltipPosition="right">
-      <img src="assets/sidebar/quality.svg" />
+    
+    <div class="menu-item" routerLink="/pm-schedule" routerLinkActive="active" pTooltip="PM Schedule" tooltipPosition="right">
+      <i class="pi pi-calendar" style="font-size: 1.45rem"></i>
     </div>
 
-    <div class="menu-item" *ngIf="isIMS" routerLink="/hod-approval" routerLinkActive="active" pTooltip="HOD Approval" tooltipPosition="right">
-      <img src="assets/sidebar/img.svg" />
+    <div class="menu-item" routerLink="/sign-off" routerLinkActive="active" pTooltip="Sign-Off" tooltipPosition="right">
+      <i class="pi pi-check-square" style="font-size: 1.45rem"></i>
     </div>
   </div>
 

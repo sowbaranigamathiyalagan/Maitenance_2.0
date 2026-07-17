@@ -166,7 +166,7 @@
       }
 
       .p-datatable-thead > tr > th {
-        background-color: #ff8a80 !important; // Pinkish red header
+        background-color: var(--brand-primary) !important; // Pinkish red header
         color: white !important;
         font-weight: 800 !important;
         border: none !important;

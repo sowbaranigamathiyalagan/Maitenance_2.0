@@ -12,6 +12,8 @@
         placeholder="Enter Tool Code"
         (keyup.enter)="onSend()"
         autofocus
+        style="text-transform: uppercase;"
+        (input)="scannerInput = scannerInput.toUpperCase()"
       />
       <p-button
         [label]="loading ? 'Searching...' : 'Send'"
@@ -28,7 +30,7 @@
       
       <!-- Left side: Image -->
       <div class="card-left" (click)="fileInput.click()">
-        <img [src]="toolInfo.image_url" alt="Tool Image" />
+        <img [src]="getImageUrl(toolInfo.image_url)" alt="Tool Image" />
         <div class="image-overlay"><i class="pi pi-camera"></i> <p>Change Image</p></div>
         <input type="file" hidden #fileInput accept=".jpeg,.jpg,.png" (change)="onImageSelect($event)" />
       </div>
@@ -43,7 +45,10 @@
             <p class="tool-name">{{ toolInfo.toolName }}</p>
           </div>
           @if (!toolInfo.suggested_action || toolInfo.suggested_action === 'NONE' || toolInfo.suggested_action === 'TOOL_REWORK') {
-            <p-button label="Intimation Slip" icon="pi pi-file" class="slip-btn" size="small" (click)="showSlip()"></p-button>
+            <div style="display: flex; gap: 8px;">
+              <p-button label="Breakdown Slip" icon="pi pi-file" class="slip-btn" size="small" (click)="showSlip()"></p-button>
+              <p-button label="Add PM Plan" icon="pi pi-plus" class="slip-btn" size="small" (click)="openAddPMPlan()"></p-button>
+            </div>
           }
         </div>
 
@@ -73,15 +78,148 @@
           </div>
         </div>
 
+        <!-- In-Process Checksheets Section (for PM progress or pending uploads) -->
+        <div *ngIf="toolInfo && toolInfo.pm_schedule_info && (toolInfo.suggested_action === 'IN_PROCESS_CHECK_PENDING' || (toolInfo.suggested_action === 'CHECK_OUT' && toolInfo.session_info?.session_type === 'PM'))" 
+             style="margin-top: 1.5rem; margin-bottom: 1.5rem; background: var(--bg-hover, #f8fafc); border: 1px solid var(--border-light, #e2e8f0); border-radius: 12px; padding: 1.25rem;">
+          <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-main, #0f172a); font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <i class="pi pi-file-import" style="color: var(--brand-primary, #d32f2f)"></i>
+            PM In-Process Checksheets
+          </h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            
+            <!-- In-Process Checksheet (Mandatory) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                <i class="pi" [ngClass]="toolInfo.pm_schedule_info.in_process_checksheet ? 'pi-check-circle text-success' : 'pi-file-o'" style="font-size: 1.2rem;"></i>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">In-Process Checksheet <span style="color: red;">*</span></span>
+                  <a *ngIf="toolInfo.pm_schedule_info.in_process_checksheet" [href]="toolInfo.pm_schedule_info.in_process_checksheet" target="_blank" style="font-size: 0.72rem; color: #3b82f6; text-decoration: underline;">View Uploaded File</a>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="file" #inProcessFile accept=".png,.jpg,.jpeg,.pdf,.xls,.xlsx" style="display: none;" (change)="onChecksheetSelect($event, 'in_process')">
+                <button type="button" class="obs-btn" style="padding: 4px 10px; font-size: 0.72rem; width: auto;" (click)="inProcessFile.click()">
+                  {{ toolInfo.pm_schedule_info.in_process_checksheet ? 'Re-upload' : 'Upload' }}
+                </button>
+                <button *ngIf="toolInfo.pm_schedule_info.in_process_checksheet" type="button" class="obs-btn" style="padding: 4px 10px; font-size: 0.72rem; width: auto; background: #ef4444; border: 1px solid #ef4444; color: #ffffff;" (click)="onChecksheetRemove('in_process')">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Hot Runner System Checksheet (Optional) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                <i class="pi" [ngClass]="toolInfo.pm_schedule_info.hot_runner_checksheet ? 'pi-check-circle text-success' : 'pi-file-o'" style="font-size: 1.2rem;"></i>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">Hot Runner System Checksheet</span>
+                  <a *ngIf="toolInfo.pm_schedule_info.hot_runner_checksheet" [href]="toolInfo.pm_schedule_info.hot_runner_checksheet" target="_blank" style="font-size: 0.72rem; color: #3b82f6; text-decoration: underline;">View Uploaded File</a>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="file" #hotRunnerFile accept=".png,.jpg,.jpeg,.pdf,.xls,.xlsx" style="display: none;" (change)="onChecksheetSelect($event, 'hot_runner')">
+                <button type="button" class="obs-btn" style="padding: 4px 10px; font-size: 0.72rem; width: auto;" (click)="hotRunnerFile.click()">
+                  {{ toolInfo.pm_schedule_info.hot_runner_checksheet ? 'Re-upload' : 'Upload' }}
+                </button>
+                <button *ngIf="toolInfo.pm_schedule_info.hot_runner_checksheet" type="button" class="obs-btn" style="padding: 4px 10px; font-size: 0.72rem; width: auto; background: #ef4444; border: 1px solid #ef4444; color: #ffffff;" (click)="onChecksheetRemove('hot_runner')">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+            <!-- Cooling System Checksheet (Optional) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; background: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                <i class="pi" [ngClass]="toolInfo.pm_schedule_info.cooling_checksheet ? 'pi-check-circle text-success' : 'pi-file-o'" style="font-size: 1.2rem;"></i>
+                <div style="display: flex; flex-direction: column;">
+                  <span style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">Cooling System Checksheet</span>
+                  <a *ngIf="toolInfo.pm_schedule_info.cooling_checksheet" [href]="toolInfo.pm_schedule_info.cooling_checksheet" target="_blank" style="font-size: 0.72rem; color: #3b82f6; text-decoration: underline;">View Uploaded File</a>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="file" #coolingFile accept=".png,.jpg,.jpeg,.pdf,.xls,.xlsx" style="display: none;" (change)="onChecksheetSelect($event, 'cooling')">
+                <button type="button" class="obs-btn" style="padding: 4px 10px; font-size: 0.72rem; width: auto;" (click)="coolingFile.click()">
+                  {{ toolInfo.pm_schedule_info.cooling_checksheet ? 'Re-upload' : 'Upload' }}
+                </button>
+                <button *ngIf="toolInfo.pm_schedule_info.cooling_checksheet" type="button" class="obs-btn" style="padding: 4px 10px; font-size: 0.72rem; width: auto; background: #ef4444; border: 1px solid #ef4444; color: #ffffff;" (click)="onChecksheetRemove('cooling')">
+                  Remove
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <!-- Footer / Actions -->
         <div class="card-footer-actions">
-          @if (toolInfo.suggested_action === 'CHECK_IN') {
+          <!-- Breakdown workflow actions -->
+          @if (toolInfo.suggested_action === 'BD_INSPECTION') {
+            <p-button
+              label="Inspect Breakdown"
+              icon="pi pi-search"
+              severity="primary"
+              class="action-btn"
+              (click)="openBDInspectionDialog()"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'CLOSE_BD') {
+            <p-button
+              label="Close Minor Breakdown"
+              icon="pi pi-check-circle"
+              severity="success"
+              class="action-btn"
+              (click)="openMinorCloseDialog()"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'PENDING_TOOLROOM_APPROVAL') {
+            <p-button
+              label="Pending Toolroom Sign-Off"
+              icon="pi pi-lock"
+              [disabled]="true"
+              severity="secondary"
+              class="action-btn"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'CHECK_IN_BD') {
+            <p-button
+              label="Check In Major Breakdown"
+              icon="pi pi-sign-in"
+              severity="success"
+              class="action-btn"
+              (click)="performDirectCheckIn()"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'CHECK_OUT_BD') {
+            <p-button
+              label="Check Out Major Breakdown"
+              icon="pi pi-sign-out"
+              severity="primary"
+              class="action-btn"
+              (click)="onCheckOut()"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'BD_REMARKS_PENDING') {
+            <p-button
+              label="Pending QA & PPC Remarks"
+              icon="pi pi-lock"
+              [disabled]="true"
+              severity="secondary"
+              class="action-btn"
+            ></p-button>
+          }
+          
+          <!-- PM/Legacy actions -->
+          @if (toolInfo.suggested_action === 'CHECK_IN' || toolInfo.suggested_action === 'CHECK_IN_PM') {
             <p-button
               [label]="toolInfo.action_label || 'Check In to Tool Room'"
               icon="pi pi-sign-in"
               severity="success"
               class="action-btn"
               (click)="onCheckIn()"
+            ></p-button>
+          } @else if (toolInfo.suggested_action === 'PENDING_PM_APPROVAL') {
+            <p-button
+              [label]="toolInfo.action_label || 'Pending PM In-Charge Sign-Off'"
+              icon="pi pi-lock"
+              [disabled]="true"
+              severity="secondary"
+              class="action-btn"
             ></p-button>
           } @else if (toolInfo.suggested_action === 'CHECK_OUT') {
             <p-button
@@ -119,76 +257,180 @@
           @for (item of checklistData.check_items; track $index) {
             <div class="checklist-row">
               <div class="item-info">
-                <span class="name">{{ item.check_item || item.item_name }}</span>
-                @if (item.remarks) {
-                  <span class="remarks-text" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Remarks: {{ item.remarks }}</span>
-                }
+                <span class="index">{{ $index + 1 }}.</span>
+                <span class="desc">{{ item.check_item }}</span>
               </div>
-              <div class="item-options">
-                <p-radioButton
-                  [(ngModel)]="item.observation"
-                  [name]="'obs_' + $index"
-                  value="OK"
-                  (ngModelChange)="onObservationChange(item, 'OK')"
-                ></p-radioButton>
-                <p-radioButton
-                  [(ngModel)]="item.observation"
-                  [name]="'obs_' + $index"
-                  value="NOT_OK"
-                  (ngModelChange)="onObservationChange(item, 'NOT_OK')"
-                ></p-radioButton>
-                <p-radioButton
-                  [(ngModel)]="item.observation"
-                  [name]="'obs_' + $index"
-                  value="NA"
-                  (ngModelChange)="onObservationChange(item, 'NA')"
-                ></p-radioButton>
+              <div class="item-actions">
+                <div class="observation-buttons">
+                  <button 
+                    [class.active]="item.observation === 'OK'" 
+                    class="obs-btn ok"
+                    (click)="onObservationChange(item, 'OK')"
+                  >OK</button>
+                  <button 
+                    [class.active]="item.observation === 'NOT_OK'" 
+                    class="obs-btn not-ok"
+                    (click)="onObservationChange(item, 'NOT_OK')"
+                  >NOT OK</button>
+                  <button 
+                    [class.active]="item.observation === 'NA'" 
+                    class="obs-btn na"
+                    (click)="onObservationChange(item, 'NA')"
+                  >N/A</button>
+                </div>
+                <span class="remark-indicator" *ngIf="item.remarks" [title]="item.remarks">
+                  <i class="pi pi-comment"></i>
+                </span>
               </div>
             </div>
           }
         }
       </div>
 
-      <div class="modal-footer">
-        <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (click)="proceedToActionModal()"></p-button>
+      <div class="checklist-footer">
+        <p-button label="Submit Checklist" icon="pi pi-arrow-right" iconPos="right" (click)="proceedToActionModal()"></p-button>
       </div>
     </div>
   </p-dialog>
 
-  <!-- NOT OK REMARKS POPUP -->
+  <!-- REMARKS DIALOG -->
   <p-dialog
     [(visible)]="showRemarksPopup"
-    header="Remarks for NOT OK Item"
+    header="Enter Remarks for NOT OK Item"
     [modal]="true"
+    [style]="{ width: '400px' }"
     [closable]="false"
-    [style]="{ width: '450px' }"
   >
-    <div class="remarks-popup">
-      <p class="remarks-item-name">{{ activeRemarkItem?.check_item || activeRemarkItem?.item_name }}</p>
-      <div class="field">
-        <label>Enter Remarks <span class="required">*</span></label>
-        <textarea
-          pTextarea
-          [(ngModel)]="tempRemark"
-          rows="4"
-          placeholder="Describe the issue observed..."
-          class="remarks-textarea"
-        ></textarea>
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+        Item: <strong>{{ activeRemarkItem?.check_item }}</strong>
+      </p>
+      <textarea 
+        pTextarea 
+        [(ngModel)]="tempRemark" 
+        rows="3" 
+        placeholder="Enter reason or remark for NOT OK observation..."
+        style="width: 100%;"
+      ></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="cancelRemark()"></p-button>
+        <p-button label="Save" (click)="saveRemark()"></p-button>
       </div>
-      <div class="remarks-popup-footer">
-        <p-button
-          label="Cancel"
-          severity="secondary"
-          [outlined]="true"
-          (click)="cancelRemark()"
-        ></p-button>
-        <p-button
-          label="Save Remarks"
-          icon="pi pi-check"
-          [disabled]="!tempRemark.trim()"
-          (click)="saveRemark()"
-        ></p-button>
+    </div>
+  </p-dialog>
+
+  <!-- PM CHECKSHEET DIALOG -->
+  <p-dialog
+    [(visible)]="showPMChecksheetModal"
+    header="Mould Preventive Maintenance Check Sheet"
+    [modal]="true"
+    [style]="{ width: '1450px' }"
+    styleClass="custom-dialog pm-checksheet-dialog"
+  >
+
+
+    <p-tabs [(value)]="activePMTab" styleClass="pm-tabs">
+      <p-tablist>
+        <p-tab *ngFor="let cat of pmChecksheetCategories; let idx = index" [value]="idx.toString()">
+          {{ cat.name }}
+        </p-tab>
+      </p-tablist>
+      
+      <p-tabpanels style="max-height: 550px; overflow-y: auto;">
+        <p-tabpanel *ngFor="let cat of pmChecksheetCategories; let idx = index" [value]="idx.toString()">
+          <div class="prep-table-container">
+            <table class="prep-table pm-checksheet-table">
+              <thead>
+                <tr>
+                  <th>CHECK AREA</th>
+                  <th>CHECK ITEM</th>
+                  <th>STANDARD</th>
+                  <th>METHOD</th>
+                  <th style="text-align: center;">OBSERVATION</th>
+                  <th>REMARK</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of cat.items">
+                  <td><strong>{{ item.area }}</strong></td>
+                  <td>{{ item.parameter }}</td>
+                  <td><span class="standard-text">{{ item.standard }}</span></td>
+                  <td><span class="method-text">{{ item.method }}</span></td>
+                  <td style="text-align: center;">
+                    <div class="obs-buttons">
+                      <button 
+                        type="button"
+                        class="obs-btn ok"
+                        [class.active]="item.status === 'OK'"
+                        (click)="item.status = 'OK'"
+                      >OK</button>
+                      <button 
+                        type="button"
+                        class="obs-btn not-ok"
+                        [class.active]="item.status === 'NOT_OK'"
+                        (click)="item.status = 'NOT_OK'"
+                      >NOT OK</button>
+                      <button 
+                        type="button"
+                        class="obs-btn na"
+                        [class.active]="item.status === 'NA'"
+                        (click)="item.status = 'NA'"
+                      >N/A</button>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                      <button 
+                        type="button" 
+                        class="obs-btn remark-btn" 
+                        [class.active]="item.remark" 
+                        (click)="openPMChecksheetRemark(item)"
+                      >
+                        <i class="pi" [ngClass]="item.remark ? 'pi-comment text-success' : 'pi-plus-circle'"></i>
+                        <span>{{ item.remark ? 'Edit' : 'Add' }}</span>
+                      </button>
+                      <span *ngIf="item.remark" style="font-size: 0.75rem; color: #10b981; font-weight: 600;" [title]="item.remark">
+                        <i class="pi pi-check-circle"></i>
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 1.5rem;">
+      <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="showPMChecksheetModal = false"></p-button>
+      <p-button label="Submit Check Sheet" severity="success" icon="pi pi-check" (click)="submitPMChecksheet()"></p-button>
+    </div>
+  </p-dialog>
+
+  <!-- PM CHECKSHEET REMARKS DIALOG -->
+  <p-dialog
+    [(visible)]="showPMChecksheetRemarksPopup"
+    header="Enter Remarks for PM Checklist Item"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [closable]="false"
+  >
+    <div class="remarks-form" style="display: flex; flex-direction: column; gap: 12px; padding: 10px 0;">
+      <div class="item-detail">
+        <div style="font-weight: 600; color: #334155;">{{ activePMChecksheetRemarkItem?.parameter }}</div>
+        <div style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">{{ activePMChecksheetRemarkItem?.standard }}</div>
       </div>
+      <textarea 
+        rows="4" 
+        [(ngModel)]="tempPMChecksheetRemark"
+        placeholder="Enter details of action taken or issues observed..."
+        style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.9rem;"
+      ></textarea>
+    </div>
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 1.5rem;">
+      <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="cancelPMChecksheetRemark()"></p-button>
+      <p-button label="Save Remark" severity="primary" (click)="savePMChecksheetRemark()"></p-button>
     </div>
   </p-dialog>
 
@@ -197,7 +439,7 @@
     [(visible)]="showActionModal"
     header="Tool Action Update"
     [modal]="true"
-    [style]="{ width: '900px' }"
+    [style]="{ width: '1050px' }"
   >
     <div class="action-form">
       <div class="form-grid">
@@ -272,6 +514,7 @@
                       [showClear]="true"
                       [style]="{'width': '100%'}"
                       styleClass="spare-dropdown"
+                      appendTo="body"
                     >
                       <ng-template pTemplate="selectedItem" let-selectedOption>
                         <div *ngIf="selectedOption">{{ selectedOption.itemcode }} - {{ selectedOption.partName }}</div>
@@ -337,6 +580,180 @@
     </div>
   </p-dialog>
 
+  <!-- PM ACTION UPDATE MODAL -->
+  <p-dialog
+    [(visible)]="showPMActionModal"
+    header="PM Corrective Action & Spares Summary"
+    [modal]="true"
+    [style]="{ width: '1600px' }"
+  >
+    <div class="action-form">
+      
+      <!-- Section 1: Corrective Action Summary Sheet -->
+      <div class="broken-parts-section" style="margin-bottom: 2rem;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;">CORRECTIVE ACTION SUMMARY SHEET</h3>
+          <p-button [text]="true" icon="pi pi-plus" label="Add Row" (click)="addPMCorrectiveRow()"></p-button>
+        </div>
+        
+        <div class="prep-table-container" style="overflow-x: auto;">
+          <table class="prep-table" style="width: 100%; min-width: 1000px; border-collapse: collapse; table-layout: fixed;">
+            <thead>
+              <tr style="background: rgba(0, 0, 0, 0.03); border-bottom: 2px solid #cbd5e1;">
+                <th style="padding: 10px; text-align: center; font-size: 0.85rem; width: 6%; vertical-align: middle; white-space: normal;">SR No.</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 26%; vertical-align: middle; white-space: normal;">Problem observed in mould</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 24%; vertical-align: middle; white-space: normal;">Correction</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 24%; vertical-align: middle; white-space: normal;">Corrective Action</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 14%; vertical-align: middle; white-space: normal;">Status after CA completed</th>
+                <th style="padding: 10px; text-align: center; font-size: 0.85rem; width: 6%; vertical-align: middle; white-space: normal;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of pmActionData.corrective_actions; let idx = index" style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 10px; font-weight: 700; text-align: center; vertical-align: middle;">{{ idx + 1 }}</td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <textarea pTextarea [autoResize]="true" rows="1" [(ngModel)]="row.problem_observed" placeholder="Enter problem observed" style="width: 100%; min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: none; font-size: 0.85rem;"></textarea>
+                </td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <textarea pTextarea [autoResize]="true" rows="1" [(ngModel)]="row.correction" placeholder="Enter correction" style="width: 100%; min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: none; font-size: 0.85rem;"></textarea>
+                </td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <textarea pTextarea [autoResize]="true" rows="1" [(ngModel)]="row.corrective_action" placeholder="Enter corrective action" style="width: 100%; min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: none; font-size: 0.85rem;"></textarea>
+                </td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <textarea pTextarea [autoResize]="true" rows="1" [(ngModel)]="row.status" placeholder="Enter status" style="width: 100%; min-height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; resize: none; font-size: 0.85rem;"></textarea>
+                </td>
+                <td style="padding: 8px 10px; text-align: center; vertical-align: middle;">
+                  <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removePMCorrectiveRow(idx)"></p-button>
+                </td>
+              </tr>
+              <tr *ngIf="pmActionData.corrective_actions.length === 0">
+                <td colspan="6" style="padding: 15px; text-align: center; color: #64748b;">No items added. Click "Add Row" to append.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 2: Mould Wise Spare Parts List -->
+      <div class="broken-parts-section" style="margin-bottom: 2rem;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;">MOULD WISE SPARE PARTS LIST</h3>
+          <p-button [text]="true" icon="pi pi-plus" label="Add Spare" (click)="addPMSpareRow()"></p-button>
+        </div>
+        
+        <div class="prep-table-container" style="overflow-x: auto;">
+          <table class="prep-table" style="width: 100%; min-width: 1000px; border-collapse: collapse; table-layout: fixed;">
+            <thead>
+              <tr style="background: rgba(0, 0, 0, 0.03); border-bottom: 2px solid #cbd5e1;">
+                <th style="padding: 10px; text-align: center; font-size: 0.85rem; width: 6%; vertical-align: middle; white-space: normal;">Sr. No.</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 34%; vertical-align: middle; white-space: normal;">DESCRIPTION</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 18%; vertical-align: middle; white-space: normal;">FINISHED SIZE</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 10%; vertical-align: middle; white-space: normal;">QTY</th>
+                <th style="padding: 10px; text-align: left; font-size: 0.85rem; width: 26%; vertical-align: middle; white-space: normal;">REMARKS</th>
+                <th style="padding: 10px; text-align: center; font-size: 0.85rem; width: 6%; vertical-align: middle; white-space: normal;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of pmActionData.spares_consumed; let idx = index" style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 10px; font-weight: 700; text-align: center; vertical-align: middle;">{{ idx + 1 }}</td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <p-select 
+                    [options]="sparesList" 
+                    [(ngModel)]="row.itemcode" 
+                    optionValue="itemcode" 
+                    [filter]="true" 
+                    filterBy="itemcode,partName" 
+                    placeholder="Search Spare"
+                    [showClear]="true"
+                    [style]="{'width': '100%', 'height': '38px'}"
+                    (onChange)="onPMSpareSelect($event, row)"
+                    styleClass="spare-dropdown"
+                    appendTo="body"
+                  >
+                    <ng-template pTemplate="selectedItem" let-selectedOption>
+                      <div *ngIf="selectedOption">{{ selectedOption.partName }}</div>
+                    </ng-template>
+                    <ng-template pTemplate="item" let-option>
+                      <div>{{ option.itemcode }} - {{ option.partName }}</div>
+                    </ng-template>
+                  </p-select>
+                </td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <input pInputText [(ngModel)]="row.finished_size" placeholder="Enter finished size" style="width: 100%; height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.85rem;" />
+                </td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <input pInputText type="number" [(ngModel)]="row.quantity" placeholder="Qty" style="width: 100%; height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.85rem;" />
+                </td>
+                <td style="padding: 8px 10px; vertical-align: middle;">
+                  <input pInputText [(ngModel)]="row.remarks" placeholder="Enter remarks" style="width: 100%; height: 38px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.85rem;" />
+                </td>
+                <td style="padding: 8px 10px; text-align: center; vertical-align: middle;">
+                  <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removePMSpareRow(idx)"></p-button>
+                </td>
+              </tr>
+              <tr *ngIf="pmActionData.spares_consumed.length === 0">
+                <td colspan="6" style="padding: 15px; text-align: center; color: #64748b;">No spares added. Click "Add Spare" to append.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 3: Kaizen / Improvements details -->
+      <div class="broken-parts-section" style="margin-bottom: 2rem;">
+        <div class="section-header" style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a;">If done any Kaizen/improvements give the details.</h3>
+        </div>
+        
+        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">Problem/Present Status :-</label>
+            <textarea pTextarea [(ngModel)]="pmActionData.kaizen_problem_status" rows="3" placeholder="Describe the current status or problem..."></textarea>
+          </div>
+          <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">Countermeasure :</label>
+            <textarea pTextarea [(ngModel)]="pmActionData.kaizen_countermeasure" rows="3" placeholder="Describe the countermeasure applied..."></textarea>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="field" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b; margin: 0;">BEFORE IMAGE</label>
+              <p-button *ngIf="kaizenBeforeFile" icon="pi pi-times" severity="danger" [outlined]="true" [style]="{'padding': '2px 8px', 'height': '28px'}" (click)="clearKaizenBeforeImage()" pTooltip="Clear Selected Image"></p-button>
+            </div>
+            <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; display: flex; flex-direction: column; gap: 8px; justify-content: center; min-height: 90px; box-sizing: border-box;">
+              <input type="file" #beforeImageInput accept=".png,.jpg,.jpeg" (change)="onKaizenBeforeImageSelect($event)" style="font-size: 0.8rem; width: 100%; margin: 0; padding: 0;" />
+              <div *ngIf="kaizenBeforePreview" style="margin-top: 10px; text-align: center;">
+                <img [src]="kaizenBeforePreview" style="max-height: 150px; max-width: 100%; border-radius: 6px; border: 1px solid #cbd5e1;" />
+              </div>
+            </div>
+          </div>
+          
+          <div class="field" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <label style="font-weight: 700; font-size: 0.9rem; color: #1e293b; margin: 0;">AFTER IMAGE</label>
+              <p-button *ngIf="kaizenAfterFile" icon="pi pi-times" severity="danger" [outlined]="true" [style]="{'padding': '2px 8px', 'height': '28px'}" (click)="clearKaizenAfterImage()" pTooltip="Clear Selected Image"></p-button>
+            </div>
+            <div style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; background: #f8fafc; display: flex; flex-direction: column; gap: 8px; justify-content: center; min-height: 90px; box-sizing: border-box;">
+              <input type="file" #afterImageInput accept=".png,.jpg,.jpeg" (change)="onKaizenAfterImageSelect($event)" style="font-size: 0.8rem; width: 100%; margin: 0; padding: 0;" />
+              <div *ngIf="kaizenAfterPreview" style="margin-top: 10px; text-align: center;">
+                <img [src]="kaizenAfterPreview" style="max-height: 150px; max-width: 100%; border-radius: 6px; border: 1px solid #cbd5e1;" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin: 1.5rem 24px 0 24px; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+        <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="showPMActionModal = false"></p-button>
+        <p-button label="Submit & Complete Check-Out" (click)="submitPMCheckOut()" [disabled]="submittingCheckOut" [icon]="submittingCheckOut ? 'pi pi-spin pi-spinner' : 'pi pi-check'"></p-button>
+      </div>
+
+    </div>
+  </p-dialog>
+
   <!-- INTIMATION SLIP MODAL -->
   <p-dialog
     [(visible)]="visibleSlip"
@@ -347,5 +764,278 @@
     [contentStyle]="{ padding: '0', borderRadius: '12px', background: 'white' }"
   >
     <app-intimation-slip *ngIf="visibleSlip" [autofillData]="toolInfo" (onClose)="visibleSlip = false"></app-intimation-slip>
+  </p-dialog>
+
+  <!-- PM PREPARATION CHECKLIST DIALOG -->
+  <p-dialog
+    [(visible)]="showPMPrepModal"
+    header="Periodic Preventive Maintenance Preparation Check Sheet"
+    [modal]="true"
+    [style]="{ width: '1150px' }"
+    styleClass="custom-dialog pm-prep-dialog"
+  >
+
+
+    <div class="prep-table-container">
+      <table class="prep-table">
+        <thead>
+          <tr>
+            <th>SR. NO.</th>
+            <th>DESCRIPTION</th>
+            <th>Standard</th>
+            <th style="text-align: center;">OBSERVATIONS</th>
+            <th>Remark</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            *ngFor="let item of pmPrepItems" 
+            [class.section-header-row]="item.id === '1' || item.id === '2' || item.id === '3'"
+          >
+            <td>{{ item.id }}</td>
+            <td>
+              <strong *ngIf="!item.id.includes('.')">{{ item.description }}</strong>
+              <span *ngIf="item.id.includes('.')">{{ item.description }}</span>
+            </td>
+            <td>
+              <span class="standard-text">{{ item.standard }}</span>
+            </td>
+            <td style="text-align: center;">
+              <div class="obs-buttons">
+                <button 
+                  type="button"
+                  class="obs-btn ok"
+                  [class.active]="item.status === 'OK'"
+                  (click)="item.status = 'OK'"
+                >OK</button>
+                <button 
+                  type="button"
+                  class="obs-btn not-ok"
+                  [class.active]="item.status === 'NOT_OK'"
+                  (click)="item.status = 'NOT_OK'"
+                >NOT OK</button>
+              </div>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button 
+                  type="button" 
+                  class="obs-btn remark-btn" 
+                  [class.active]="item.remark" 
+                  (click)="openPMPrepRemark(item)"
+                  style="padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <i class="pi" [ngClass]="item.remark ? 'pi-comment text-success' : 'pi-plus-circle'"></i>
+                  <span>{{ item.remark ? 'Edit' : 'Add' }}</span>
+                </button>
+                <span *ngIf="item.remark" style="font-size: 0.75rem; color: #10b981; font-weight: 600;" [title]="item.remark">
+                  <i class="pi pi-check-circle"></i>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 1.5rem;">
+      <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="showPMPrepModal = false"></p-button>
+      <p-button label="Submit & Complete Check-In" severity="success" icon="pi pi-check" (click)="submitPMPrepCheckin()"></p-button>
+    </div>
+  </p-dialog>
+
+  <!-- PM PREPARATION REMARKS DIALOG -->
+  <p-dialog
+    [(visible)]="showPMPrepRemarksPopup"
+    header="Enter Remarks for PM Preparation Item"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    [closable]="false"
+  >
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">
+        Item: <strong>{{ activePMPrepRemarkItem?.description }}</strong>
+      </p>
+      <textarea 
+        pTextarea 
+        [(ngModel)]="tempPMPrepRemark" 
+        rows="3" 
+        placeholder="Enter observation remark..."
+        style="width: 100%;"
+      ></textarea>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="cancelPMPrepRemark()"></p-button>
+        <p-button label="Save" (click)="savePMPrepRemark()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- ADD PM PLAN DIALOG -->
+  <p-dialog
+    header="Add PM Plan"
+    [(visible)]="showAddPMPlanModal"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+    styleClass="custom-dialog"
+  >
+    <div class="dialog-form" style="display: flex; flex-direction: column; gap: 16px; padding: 10px 0;">
+      <div class="form-field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="pmToolCode" style="font-weight: 700; font-size: 14px; color: var(--text-main);">Tool Code</label>
+        <input id="pmToolCode" type="text" pInputText [value]="newPMPlan.tool_code" readonly style="background-color: var(--bg-hover) !important; cursor: not-allowed; width: 100%;" />
+      </div>
+
+      <div class="form-field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="pmPlannedDate" style="font-weight: 700; font-size: 14px; color: var(--text-main);">Planned Date <span style="color: var(--status-error);">*</span></label>
+        <input id="pmPlannedDate" type="date" pInputText [(ngModel)]="newPMPlan.planned_date" style="width: 100%;" />
+      </div>
+
+      <div class="form-field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="pmCustomer" style="font-weight: 700; font-size: 14px; color: var(--text-main);">Customer</label>
+        <input id="pmCustomer" type="text" pInputText [(ngModel)]="newPMPlan.customer" style="width: 100%;" />
+      </div>
+
+      <div class="form-field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="pmMachineTonnage" style="font-weight: 700; font-size: 14px; color: var(--text-main);">Machine Tonnage</label>
+        <input id="pmMachineTonnage" type="text" pInputText [(ngModel)]="newPMPlan.machine_tonnage" style="width: 100%;" placeholder="e.g. 1300A" />
+      </div>
+
+      <div class="form-field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="pmReqHours" style="font-weight: 700; font-size: 14px; color: var(--text-main);">Required Hours</label>
+        <input id="pmReqHours" type="number" pInputText [(ngModel)]="newPMPlan.req_hours" style="width: 100%;" placeholder="e.g. 4" />
+      </div>
+
+      <div class="form-field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="pmRemarks" style="font-weight: 700; font-size: 14px; color: var(--text-main);">Remarks</label>
+        <textarea id="pmRemarks" pInputTextarea [(ngModel)]="newPMPlan.remark" rows="3" style="width: 100%;" placeholder="Remarks..."></textarea>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+        <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="showAddPMPlanModal = false"></p-button>
+        <p-button label="Submit" (click)="submitPMPlan()"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- BREAKDOWN INSPECTION DIALOG -->
+  <p-dialog
+    [(visible)]="showBDInspectionModal"
+    header="Breakdown Inspection"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-weight: 700; color: var(--text-main);">Breakdown Type <span style="color: var(--status-error);">*</span></label>
+        <div style="display: flex; gap: 16px; margin-top: 5px;">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;">
+            <input type="radio" name="bdType" value="MINOR" [(ngModel)]="bdInspectionData.breakdown_type" style="transform: scale(1.1);" />
+            Minor Breakdown
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 500;">
+            <input type="radio" name="bdType" value="MAJOR" [(ngModel)]="bdInspectionData.breakdown_type" style="transform: scale(1.1);" />
+            Major Breakdown
+          </label>
+        </div>
+      </div>
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="bdInspRemarks" style="font-weight: 700; color: var(--text-main);">Inspection Remarks</label>
+        <textarea 
+          id="bdInspRemarks" 
+          pTextarea 
+          [(ngModel)]="bdInspectionData.remarks" 
+          rows="3" 
+          placeholder="Enter initial observation or problem details..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        ></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="showBDInspectionModal = false"></p-button>
+        <p-button label="Submit Inspection" (click)="submitBDInspection()"></p-button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- MINOR BREAKDOWN CLOSURE DIALOG -->
+  <p-dialog
+    [(visible)]="showMinorCloseModal"
+    header="Close Minor Breakdown"
+    [modal]="true"
+    [style]="{ width: '550px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="minorInspRemarks" style="font-weight: 700; color: var(--text-main);">Observation / Remarks</label>
+        <textarea 
+          id="minorInspRemarks" 
+          pTextarea 
+          [(ngModel)]="minorCloseData.inspection_remarks" 
+          rows="2" 
+          placeholder="Enter findings..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        ></textarea>
+      </div>
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="minorCorrectiveAction" style="font-weight: 700; color: var(--text-main);">Action Taken <span style="color: var(--status-error);">*</span></label>
+        <textarea 
+          id="minorCorrectiveAction" 
+          pTextarea 
+          [(ngModel)]="minorCloseData.corrective_action" 
+          rows="2" 
+          placeholder="Enter action taken to clear breakdown..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        ></textarea>
+      </div>
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="minorRepairedBy" style="font-weight: 700; color: var(--text-main);">PM Engineer Name / Signature <span style="color: var(--status-error);">*</span></label>
+        <input 
+          id="minorRepairedBy" 
+          pInputText 
+          [(ngModel)]="minorCloseData.repaired_by" 
+          placeholder="Enter your name..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        />
+      </div>
+
+      <!-- Spares consumed section -->
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 8px;">
+          <label style="font-weight: 700; color: var(--text-main); margin-bottom: 0;">Spares Consumed (Optional)</label>
+          <p-button [text]="true" icon="pi pi-plus" label="Add Spare" (click)="addMinorCloseSpare()" size="small"></p-button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div *ngFor="let spare of minorCloseData.spares_consumed; let idx = index" style="display: flex; align-items: center; gap: 10px;">
+            <p-select 
+              [options]="sparesList" 
+              [(ngModel)]="spare.itemcode" 
+              optionValue="itemcode" 
+              [filter]="true" 
+              filterBy="itemcode,partName" 
+              placeholder="Search and Select Spare"
+              [showClear]="true"
+              [style]="{'flex': '1'}"
+              appendTo="body"
+            >
+              <ng-template pTemplate="selectedItem" let-selectedOption>
+                <div *ngIf="selectedOption">{{ selectedOption.itemcode }} - {{ selectedOption.partName }}</div>
+              </ng-template>
+              <ng-template pTemplate="item" let-option>
+                <div>{{ option.itemcode }} - {{ option.partName }}</div>
+              </ng-template>
+            </p-select>
+            
+            <input pInputText type="number" [(ngModel)]="spare.quantity" placeholder="Qty" style="width: 80px; flex-shrink: 0;" />
+            <p-button [text]="true" icon="pi pi-trash" severity="danger" (click)="removeMinorCloseSpare(idx)" [disabled]="minorCloseData.spares_consumed.length <= 1" size="small"></p-button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+        <p-button label="Cancel" severity="secondary" [outlined]="true" (click)="showMinorCloseModal = false"></p-button>
+        <p-button label="Submit & Close" [disabled]="!minorCloseData.corrective_action || !minorCloseData.repaired_by" (click)="submitMinorClose()"></p-button>
+      </div>
+    </div>
   </p-dialog>
 </div>

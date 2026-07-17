@@ -1,0 +1,219 @@
+<p-toast position="top-right"></p-toast>
+
+<div class="pm-schedule-page">
+  <div class="header-card">
+    <div class="title-section">
+      <h1>Monthly PM Schedule</h1>
+      <p class="subtitle">Track and manage monthly preventive maintenance plans, manual additions, and status tracking.</p>
+    </div>
+    
+    <div class="controls-row">
+      <div class="filter-controls">
+        <div class="control-group">
+          <label>Month</label>
+          <select class="custom-select" [(ngModel)]="selectedMonth" (change)="loadSchedules()">
+            <option *ngFor="let m of months" [value]="m.value">{{ m.name }}</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Year</label>
+          <select class="custom-select" [(ngModel)]="selectedYear" (change)="onYearChange()">
+            <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+          </select>
+        </div>
+        
+        <div class="tab-selectors">
+          <button class="tab-btn" [class.active]="activeTab === 'grid'" (click)="activeTab = 'grid'">
+            <i class="pi pi-table"></i> Grid View
+          </button>
+          <button class="tab-btn" [class.active]="activeTab === 'calendar'" (click)="activeTab = 'calendar'">
+            <i class="pi pi-calendar"></i> Calendar View
+          </button>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <button pButton type="button" label="Template" icon="pi pi-download" class="p-button-outlined p-button-sm" (click)="downloadTemplate()"></button>
+        <button pButton type="button" label="Upload Plan" icon="pi pi-upload" class="p-button-outlined p-button-sm" (click)="fileInput.click()"></button>
+        <button pButton type="button" label="Add PM Plan" icon="pi pi-plus" class="p-button-primary p-button-sm" (click)="openAddModal()"></button>
+        
+        <input #fileInput type="file" style="display: none;" accept=".xlsx, .xls" (change)="onUploadExcel($event)" />
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE GRID VIEW -->
+  <div class="table-card" *ngIf="activeTab === 'grid'">
+    <p-table
+      class="custom-table"
+      [value]="schedules"
+      [loading]="loading"
+      [rows]="10"
+      [paginator]="true"
+      styleClass="p-datatable-striped"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>S.N.</th>
+          <th>Tool Code</th>
+          <th>Unique ID</th>
+          <th>Mould Name</th>
+          <th>M/C Tonnage</th>
+          <th>Req. Hours</th>
+          <th>Planned Date</th>
+          <th>Actual Date & Time</th>
+          <th>Status</th>
+          <th>Actions (Click to Sign-Off)</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row let-i="rowIndex">
+        <tr>
+          <td>{{ i + 1 }}</td>
+          <td><strong>{{ row.tool_code }}</strong></td>
+          <td>{{ row.unique_id }}</td>
+          <td>{{ row.mould_name }}</td>
+          <td>{{ row.machine_tonnage || 'N/A' }}</td>
+          <td>{{ row.req_hours ? row.req_hours + ' hrs' : 'N/A' }}</td>
+          <td>{{ row.planned_date | date: 'dd-MMM-yyyy' }}</td>
+          <td>{{ row.actual_date_time ? (row.actual_date_time | date: 'dd-MMM-yyyy hh:mm a') : 'Not Checked In' }}</td>
+          <td>
+            <span class="status-badge" [class]="row.status.toLowerCase().replace('_', '-').replace(' ', '-')">
+              {{ row.status.replace('_', ' ') }}
+            </span>
+          </td>
+          <td>
+            <div class="sign-off-status-container" *ngIf="row.status !== 'IN_PROGRESS'">
+              <!-- PM Sign-off tag -->
+              <span 
+                *ngIf="row.status === 'PLANNED' || row.status === 'OVERDUE'; else staticPm"
+                class="sign-tag-link" 
+                [class.signed]="row.pm_in_charge" 
+                [routerLink]="['/sign-off']"
+                [queryParams]="{ schedule_id: row.id, role: 'pm' }"
+                style="cursor: pointer;"
+                [title]="row.pm_in_charge ? 'PM: Signed by ' + row.pm_in_charge + '. Click to go to Sign-Off page' : 'PM: Pending. Click to go to Sign-Off page'">
+                PM
+              </span>
+              <ng-template #staticPm>
+                <span 
+                  class="sign-tag-link static" 
+                  [class.signed]="row.pm_in_charge" 
+                  [title]="row.pm_in_charge ? 'PM: Signed by ' + row.pm_in_charge : 'PM: Not signed'">
+                  PM
+                </span>
+              </ng-template>
+
+
+            </div>
+            <span *ngIf="row.status === 'IN_PROGRESS'" class="text-warning"><i class="pi pi-spin pi-spinner"></i> Running</span>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="10" class="text-center">No preventive maintenance schedules found for this period.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- CALENDAR VIEW -->
+  <div class="calendar-card" *ngIf="activeTab === 'calendar'">
+    <div class="calendar-header-days">
+      <div class="day-name">Sun</div>
+      <div class="day-name">Mon</div>
+      <div class="day-name">Tue</div>
+      <div class="day-name">Wed</div>
+      <div class="day-name">Thu</div>
+      <div class="day-name">Fri</div>
+      <div class="day-name">Sat</div>
+    </div>
+    
+    <div class="calendar-grid">
+      <div 
+        class="calendar-day" 
+        *ngFor="let day of calendarDays" 
+        [class.empty]="!day.dayNumber"
+        [class.today]="day.isToday"
+      >
+        <span class="day-num" *ngIf="day.dayNumber">{{ day.dayNumber }}</span>
+        
+        <div class="calendar-events-container" *ngIf="day.dayNumber">
+          <ng-container *ngFor="let evt of day.events">
+            <!-- Clickable event (Planned or Overdue) -->
+            <div 
+              *ngIf="evt.status === 'PLANNED' || evt.status === 'OVERDUE'; else staticEvt"
+              class="cal-event" 
+              [class]="evt.status.toLowerCase().replace(' ', '-')"
+              [routerLink]="['/sign-off']"
+              [queryParams]="{ schedule_id: evt.id }"
+              style="cursor: pointer;"
+              [title]="evt.tool_code + ' - ' + evt.mould_name + '. Click to go to Sign-Off page'"
+            >
+              <span class="evt-code">{{ evt.tool_code }}</span>
+              <span class="evt-desc">{{ evt.status }}</span>
+            </div>
+            <!-- Static event (In Progress, Completed, Closed) -->
+            <ng-template #staticEvt>
+              <div 
+                class="cal-event static" 
+                [class]="evt.status.toLowerCase().replace(' ', '-')"
+                style="cursor: default;"
+                [title]="evt.tool_code + ' - ' + evt.mould_name + ' (' + evt.status + ')'"
+              >
+                <span class="evt-code">{{ evt.tool_code }}</span>
+                <span class="evt-desc">{{ evt.status }}</span>
+              </div>
+            </ng-template>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD MANUAL SCHEDULE DIALOG -->
+  <p-dialog 
+    header="Add PM Plan" 
+    [(visible)]="showAddModal" 
+    [modal]="true" 
+    [style]="{width: '450px'}"
+    styleClass="custom-dialog"
+  >
+    <div class="dialog-form">
+      <div class="form-field">
+        <label for="toolCode">Tool Code <span class="required">*</span></label>
+        <input id="toolCode" type="text" pInputText [(ngModel)]="newSchedule.tool_code" class="form-input" placeholder="e.g. XBAE2" />
+      </div>
+      
+      <div class="form-field">
+        <label for="plannedDate">Planned Date <span class="required">*</span></label>
+        <input id="plannedDate" type="date" pInputText [(ngModel)]="newSchedule.planned_date" class="form-input" />
+      </div>
+      
+      <div class="form-field">
+        <label for="customer">Customer</label>
+        <input id="customer" type="text" pInputText [(ngModel)]="newSchedule.customer" class="form-input" placeholder="e.g. MATE" />
+      </div>
+      
+      <div class="form-field">
+        <label for="machineTonnage">Machine Tonnage</label>
+        <input id="machineTonnage" type="text" pInputText [(ngModel)]="newSchedule.machine_tonnage" class="form-input" placeholder="e.g. 1300A" />
+      </div>
+      
+      <div class="form-field">
+        <label for="reqHours">Required Hours (estimate)</label>
+        <input id="reqHours" type="number" pInputText [(ngModel)]="newSchedule.req_hours" class="form-input" placeholder="e.g. 4" />
+      </div>
+      
+      <div class="form-field">
+        <label for="remark">Remark</label>
+        <textarea id="remark" pInputTextarea [(ngModel)]="newSchedule.remark" class="form-input" rows="3" placeholder="Additional instructions..."></textarea>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" class="p-button-text p-button-sm" (click)="showAddModal = false"></button>
+      <button pButton type="button" label="Submit" class="p-button-primary p-button-sm" (click)="submitManualPlan()"></button>
+    </ng-template>
+  </p-dialog>
+</div>

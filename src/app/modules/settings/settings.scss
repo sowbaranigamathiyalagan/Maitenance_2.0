@@ -191,10 +191,10 @@
           font-size: 12px;
           font-weight: 600;
 
-          &[data-type="BASE-ADMIN"], &[data-type="ADMIN"] { background: rgba(220, 38, 38, 0.2); color: #fca5a5; border: 1px solid rgba(220, 38, 38, 0.3); }
-          &[data-type="QA"] { background: rgba(22, 163, 74, 0.2); color: #86efac; border: 1px solid rgba(22, 163, 74, 0.3); }
-          &[data-type="IMG"] { background: rgba(2, 132, 199, 0.2); color: #7dd3fc; border: 1px solid rgba(2, 132, 199, 0.3); }
-          &[data-type="TOOL-ROOM"] { background: rgba(202, 138, 4, 0.2); color: #fde047; border: 1px solid rgba(202, 138, 4, 0.3); }
+          &[data-type="BASE-ADMIN"], &[data-type="ADMIN"] { background: rgba(211, 47, 47, 0.12); color: #d32f2f; border: 1px solid rgba(211, 47, 47, 0.25); }
+          &[data-type="QA"] { background: rgba(46, 125, 50, 0.12); color: #2e7d32; border: 1px solid rgba(46, 125, 50, 0.25); }
+          &[data-type="IMG"] { background: rgba(21, 101, 192, 0.12); color: #1565c0; border: 1px solid rgba(21, 101, 192, 0.25); }
+          &[data-type="TOOL-ROOM"] { background: rgba(202, 138, 4, 0.12); color: #b45309; border: 1px solid rgba(202, 138, 4, 0.25); }
           &[data-type="MAINTENANCE"] { background: var(--bg-hover); color: var(--text-main); border: 1px solid var(--border-medium); }
         }
 

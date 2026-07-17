@@ -30,6 +30,16 @@ export class Recents implements OnInit {
     return true;
   }
 
+  getImageUrl(imagePath: string): string {
+    if (!imagePath) return '';
+    let relativePath = imagePath;
+    const mediaIdx = imagePath.indexOf('/media/');
+    if (mediaIdx > -1) {
+      relativePath = imagePath.substring(mediaIdx);
+    }
+    return this.intimationService.baseUrl + relativePath;
+  }
+
   constructor(
     private intimationService: IntimationService,
     private messageService: MessageService,
@@ -66,11 +76,11 @@ export class Recents implements OnInit {
   }
 
   viewReport(item: any) {
-    if (item.status?.toUpperCase() !== 'CLOSED') {
+    if (item.status?.toUpperCase() !== 'CLOSED' && item.status?.toUpperCase() !== 'COMPLETED') {
       this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'Report is only available for closed activities.',
+        detail: 'Report is only available for completed or closed activities.',
       });
       return;
     }

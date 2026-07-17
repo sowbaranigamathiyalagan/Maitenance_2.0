@@ -27,6 +27,10 @@
         <i class="pi pi-cog"></i>
         <span>Spare Management</span>
       </div>
+      <div class="nav-item" [class.active]="activeTab === 'mould_master'" (click)="switchTab('mould_master')">
+        <i class="pi pi-database"></i>
+        <span>Mould Master</span>
+      </div>
     </div>
 
     <!-- Settings Content -->
@@ -294,6 +298,60 @@
                   <td>{{ i + 1 }}</td>
                   <td class="wrap-text">{{ item.partName || item.part_name || item.name }}</td>
                   <td>{{ item.itemcode || item.item_code || item.code }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          }
+        </div>
+      }
+
+      <!-- ========================================== -->
+      <!-- MOULD MASTER TAB                           -->
+      <!-- ========================================== -->
+      @if (activeTab === 'mould_master') {
+        <div class="panel-header">
+          <div>
+            <h2>Mould Master Info Management</h2>
+            <p>Manage PM shot limits and planned maintenance dates for all molds</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <p-button label="Download Excel" icon="pi pi-download" severity="info" [outlined]="true" (click)="downloadMouldMasterExcel()" pTooltip="Download Excel Template"></p-button>
+            <input #mouldExcelInput type="file" accept=".xlsx" style="display: none;" (change)="onMouldMasterExcelSelect($event)" />
+            <p-button label="Upload Excel" icon="pi pi-file-excel" severity="success" [outlined]="true" (click)="mouldExcelInput.click()" [loading]="excelUploading"></p-button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          @if (mouldMasterLoading) {
+            <div class="loader">
+              <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+              <p>Loading mould master info...</p>
+            </div>
+          } @else if (mouldMasterList.length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-database"></i>
+              <p>No mould master records found.</p>
+            </div>
+          } @else {
+            <p-table [value]="mouldMasterList" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm custom-table">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 80px">#</th>
+                  <th>Tool Code</th>
+                  <th>PM Shot Limit</th>
+                  <th>Plan Date (YYYY-MM-DD)</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-item let-i="rowIndex">
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td><strong>{{ item.tool_code }}</strong></td>
+                  <td>{{ item.pm_shot_limit }}</td>
+                  <td>
+                    <span [class.text-muted]="!item.plan_date" [style.font-style]="!item.plan_date ? 'italic' : 'normal'">
+                      {{ item.plan_date || 'No Date (Date-based PM Disabled)' }}
+                    </span>
+                  </td>
                 </tr>
               </ng-template>
             </p-table>

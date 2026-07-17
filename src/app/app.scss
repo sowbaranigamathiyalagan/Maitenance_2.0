@@ -57,3 +57,35 @@
     }
   }
 }
+// Dark mode toast overrides
+:host-context([data-theme="dark"]) ::ng-deep,
+::ng-deep [data-theme="dark"] {
+  .p-toast .p-toast-message {
+    &.p-toast-message-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      border-left-color: #10b981;
+      .p-toast-message-icon { color: #10b981; }
+    }
+    &.p-toast-message-error {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-left-color: #ef4444;
+      .p-toast-message-icon { color: #ef4444; }
+    }
+    &.p-toast-message-warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border-left-color: #f59e0b;
+      .p-toast-message-icon { color: #f59e0b; }
+    }
+    &.p-toast-message-info {
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border-left-color: #3b82f6;
+      .p-toast-message-icon { color: #3b82f6; }
+    }
+    .p-toast-summary { color: inherit; }
+    .p-toast-detail { color: inherit; opacity: 0.85; }
+  }
+}

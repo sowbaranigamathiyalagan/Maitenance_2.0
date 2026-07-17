@@ -31,7 +31,7 @@ import { ToastModule } from 'primeng/toast';
   styleUrl: './settings.scss',
 })
 export class Settings implements OnInit {
-  activeTab: 'users' | 'checklist' | 'spares' = 'users';
+  activeTab: 'users' | 'checklist' | 'spares' | 'mould_master' = 'users';
 
   // ── Session info ────────────────────────────────────────────
   userType: string = '';
@@ -75,6 +75,13 @@ export class Settings implements OnInit {
   addingSparePart: boolean = false;
   csvUploading: boolean = false;
 
+  // =======================================================================
+  // MOULD MASTER STATE
+  // =======================================================================
+  mouldMasterList: any[] = [];
+  mouldMasterLoading: boolean = false;
+  excelUploading: boolean = false;
+
   constructor(
     private intimationService: IntimationService,
     private messageService: MessageService,
@@ -93,7 +100,7 @@ export class Settings implements OnInit {
 
   get isAdmin() { return this.userType === 'BASE-ADMIN' || this.userType === 'ADMIN'; }
 
-  switchTab(tab: 'users' | 'checklist' | 'spares') {
+  switchTab(tab: 'users' | 'checklist' | 'spares' | 'mould_master') {
     this.activeTab = tab;
     if (tab === 'users') {
       this.fetchUsers();
@@ -101,6 +108,8 @@ export class Settings implements OnInit {
       this.fetchChecklist();
     } else if (tab === 'spares') {
       this.fetchSpares();
+    } else if (tab === 'mould_master') {
+      this.fetchMouldMaster();
     }
   }
 
@@ -428,6 +437,64 @@ export class Settings implements OnInit {
         this.zone.run(() => {
           this.csvUploading = false;
           this.messageService.add({ severity: 'error', summary: 'Upload Failed', detail: 'Failed to process CSV upload.' });
+          this.cdr.detectChanges();
+          event.target.value = '';
+        });
+      }
+    });
+  }
+
+  fetchMouldMaster() {
+    this.mouldMasterLoading = true;
+    this.cdr.detectChanges();
+    this.intimationService.getMouldMasterList().subscribe({
+      next: (res) => {
+        this.zone.run(() => {
+          this.mouldMasterList = Array.isArray(res) ? res : (res.data || []);
+          this.mouldMasterLoading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.zone.run(() => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load Mould Master records.' });
+          this.mouldMasterLoading = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  downloadMouldMasterExcel() {
+    const url = `${this.intimationService.baseUrl}/api/mould-master/download`;
+    window.open(url, '_blank');
+  }
+
+  onMouldMasterExcelSelect(event: any) {
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.xlsx')) {
+      this.messageService.add({ severity: 'error', summary: 'Invalid File', detail: 'Please upload a valid .xlsx file.' });
+      return;
+    }
+
+    this.excelUploading = true;
+    this.messageService.add({ severity: 'info', summary: 'Uploading...', detail: 'Uploading Mould Master Excel file...' });
+
+    this.intimationService.uploadMouldMasterExcel(file).subscribe({
+      next: (res: any) => {
+        this.zone.run(() => {
+          this.excelUploading = false;
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: res.message || 'Mould Master updated successfully.' });
+          this.fetchMouldMaster();
+          event.target.value = '';
+        });
+      },
+      error: (err) => {
+        this.zone.run(() => {
+          this.excelUploading = false;
+          this.messageService.add({ severity: 'error', summary: 'Upload Failed', detail: err.error?.error || 'Failed to process Excel upload.' });
           this.cdr.detectChanges();
           event.target.value = '';
         });

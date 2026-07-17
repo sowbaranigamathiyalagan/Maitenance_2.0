@@ -42,7 +42,6 @@ export class IntimationSlip implements OnInit {
   };
 
   categories = [
-    { label: 'Prev. Maint', value: 'PM' },
     { label: 'Break Down', value: 'BD' },
     { label: 'Repair', value: 'REPAIR' },
     { label: 'Modify', value: 'MODIFY' },

@@ -21,7 +21,7 @@
           <th>Status</th>
           <th>Problem Observed</th>
           <th>Created By</th>
-          <th>Verified By</th>
+          <!-- <th>Verified By</th> -->
           <th>Date Created</th>
           <th>Actions</th>
         </tr>
@@ -39,13 +39,13 @@
           </td>
           <td>{{ item.problem_observed }}</td>
           <td>{{ item.created_by }}</td>
-          <td>{{ item.verified_by }}</td>
+          <!-- <td>{{ item.verified_by }}</td> -->
           <td>{{ item.date_created | date: 'dd/MM/yyyy HH:mm' }}</td>
           <td>
             <p-button 
               icon="pi pi-file-pdf" 
               (click)="viewReport(item)" 
-              *ngIf="item.status?.toUpperCase() === 'CLOSED'"
+              *ngIf="item.status?.toUpperCase() === 'CLOSED' || item.status?.toUpperCase() === 'COMPLETED'"
               styleClass="p-button-rounded p-button-text p-button-sm p-button-info"
               pTooltip="View PDF Report">
             </p-button>
@@ -161,7 +161,8 @@
       </p-table>
     </div>
 
-    <div class="report-section" *ngIf="selectedReport.spares_consumed?.length">
+    <!-- Standard Breakdown Spares Consumed -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category !== 'PM' && selectedReport.spares_consumed?.length">
       <h3>Spares Consumed</h3>
       <p-table [value]="selectedReport.spares_consumed" styleClass="p-datatable-sm p-datatable-gridlines">
         <ng-template pTemplate="header">
@@ -174,6 +175,29 @@
           <tr>
             <td>{{ spare.itemcode }}</td>
             <td>{{ spare.quantity }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- PM Custom Spares Consumed -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category === 'PM' && selectedReport.spares_consumed?.length">
+      <h3>Mould Wise Spare Parts List</h3>
+      <p-table [value]="selectedReport.spares_consumed" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Description</th>
+            <th>Finished Size</th>
+            <th>Qty</th>
+            <th>Remarks</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-spare>
+          <tr>
+            <td>{{ spare.description || spare.itemcode }}</td>
+            <td>{{ spare.finished_size || '-' }}</td>
+            <td>{{ spare.quantity }}</td>
+            <td>{{ spare.remarks || '-' }}</td>
           </tr>
         </ng-template>
       </p-table>
@@ -200,18 +224,159 @@
 
       <div *ngIf="selectedReport.maintenance_checklist?.marking_sheet" style="margin-top: 1.5rem; text-align: center;">
         <h4>Marking Sheet</h4>
-        <img [src]="selectedReport.maintenance_checklist.marking_sheet" alt="Marking Sheet" style="max-width: 100%; max-height: 800px; border: 1px solid #ccc;"/>
+        <img [src]="getImageUrl(selectedReport.maintenance_checklist.marking_sheet)" alt="Marking Sheet" style="max-width: 100%; max-height: 800px; border: 1px solid #ccc;"/>
       </div>
     </div>
 
-    <div class="report-section" *ngIf="selectedReport.hod_approval || selectedReport.final_qa">
+    <!-- PM Corrective Action Summary Sheet -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category === 'PM' && selectedReport.pm_action_details?.corrective_action_summary?.length">
+      <h3>Corrective Action Summary Sheet</h3>
+      <p-table [value]="selectedReport.pm_action_details.corrective_action_summary" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 8%">Sr No.</th>
+            <th style="width: 32%">Problem Observed in Mould</th>
+            <th style="width: 25%">Correction</th>
+            <th style="width: 25%">Corrective Action</th>
+            <th style="width: 10%">Status</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-idx="rowIndex">
+          <tr>
+            <td style="font-weight: 700;">{{ idx + 1 }}</td>
+            <td>{{ row.problem_observed }}</td>
+            <td>{{ row.correction }}</td>
+            <td>{{ row.corrective_action }}</td>
+            <td>{{ row.status }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- PM Kaizen/Improvements Details -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category === 'PM' && selectedReport.pm_action_details && (hasValue(selectedReport.pm_action_details.kaizen_problem_status) || hasValue(selectedReport.pm_action_details.kaizen_countermeasure) || selectedReport.pm_action_details.kaizen_before_image || selectedReport.pm_action_details.kaizen_after_image)">
+      <h3>Kaizen / Improvements Details</h3>
+      <div class="grid-layout" style="margin-bottom: 1.5rem;">
+        <div *ngIf="hasValue(selectedReport.pm_action_details.kaizen_problem_status)"><strong>Problem/Present Status:</strong> {{ selectedReport.pm_action_details.kaizen_problem_status }}</div>
+        <div *ngIf="hasValue(selectedReport.pm_action_details.kaizen_countermeasure)"><strong>Countermeasure:</strong> {{ selectedReport.pm_action_details.kaizen_countermeasure }}</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: center; margin-top: 1rem;">
+        <div *ngIf="selectedReport.pm_action_details.kaizen_before_image">
+          <strong style="display: block; margin-bottom: 8px; color: var(--text-main);">Before Image</strong>
+          <img [src]="getImageUrl(selectedReport.pm_action_details.kaizen_before_image)" alt="Kaizen Before" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 2px 4px rgba(0,0,0,0.05);"/>
+        </div>
+        <div *ngIf="selectedReport.pm_action_details.kaizen_after_image">
+          <strong style="display: block; margin-bottom: 8px; color: var(--text-main);">After Image</strong>
+          <img [src]="getImageUrl(selectedReport.pm_action_details.kaizen_after_image)" alt="Kaizen After" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 1px solid var(--border-medium); box-shadow: 0 2px 4px rgba(0,0,0,0.05);"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- PM Checksheets -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category === 'PM' && selectedReport.pm_details && (selectedReport.pm_details.in_process_checksheet || selectedReport.pm_details.hot_runner_checksheet || selectedReport.pm_details.cooling_checksheet)">
+      <h3>PM Checksheets</h3>
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 10px;">
+        <div *ngIf="selectedReport.pm_details.in_process_checksheet" style="padding: 12px 18px; border: 1px dashed var(--border-medium); border-radius: 8px; background: var(--bg-surface);">
+          <a [href]="selectedReport.pm_details.in_process_checksheet" target="_blank" style="text-decoration: none; color: var(--brand-primary); display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem;">
+            <i class="pi pi-file-excel" style="color: #16a34a; font-size: 1.3rem;"></i>
+            In-Process Checksheet
+          </a>
+        </div>
+        <div *ngIf="selectedReport.pm_details.hot_runner_checksheet" style="padding: 12px 18px; border: 1px dashed var(--border-medium); border-radius: 8px; background: var(--bg-surface);">
+          <a [href]="selectedReport.pm_details.hot_runner_checksheet" target="_blank" style="text-decoration: none; color: var(--brand-primary); display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem;">
+            <i class="pi pi-file-excel" style="color: #16a34a; font-size: 1.3rem;"></i>
+            Hot Runner Checksheet
+          </a>
+        </div>
+        <div *ngIf="selectedReport.pm_details.cooling_checksheet" style="padding: 12px 18px; border: 1px dashed var(--border-medium); border-radius: 8px; background: var(--bg-surface);">
+          <a [href]="selectedReport.pm_details.cooling_checksheet" target="_blank" style="text-decoration: none; color: var(--brand-primary); display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.95rem;">
+            <i class="pi pi-file-excel" style="color: #16a34a; font-size: 1.3rem;"></i>
+            Cooling Checksheet
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PM Preparation Checklist -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category === 'PM' && selectedReport.pm_preparation_checklist?.length">
+      <h3>Preventive Maintenance Preparation Checklist</h3>
+      <p-table [value]="selectedReport.pm_preparation_checklist" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 6%">Sr No.</th>
+            <th style="width: 34%">Check Item</th>
+            <th style="width: 34%">Standard</th>
+            <th style="width: 10%">Observation</th>
+            <th style="width: 16%">Remarks</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item let-idx="rowIndex">
+          <tr>
+            <td style="font-weight: 700;">{{ idx + 1 }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.standard }}</td>
+            <td style="text-align: center;">
+              <span class="status-badge" [attr.data-status]="item.status === 'OK' ? 'CLOSED' : 'DENIED'">
+                {{ item.status }}
+              </span>
+            </td>
+            <td>{{ item.remark || '-' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- PM Mould Checksheet -->
+    <div class="report-section" *ngIf="selectedReport.intimation_details?.category === 'PM' && selectedReport.pm_mould_checksheet?.length">
+      <h3>PM Mould Checksheet</h3>
+      <p-table [value]="selectedReport.pm_mould_checksheet" styleClass="p-datatable-sm p-datatable-gridlines">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 5%">Sr No.</th>
+            <th style="width: 15%">Category</th>
+            <th style="width: 15%">Check Area</th>
+            <th style="width: 18%">Check Item</th>
+            <th style="width: 23%">Standard</th>
+            <th style="width: 8%">Method</th>
+            <th style="width: 8%">Observation</th>
+            <th style="width: 8%">Remarks</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item let-idx="rowIndex">
+          <tr>
+            <td style="font-weight: 700;">{{ idx + 1 }}</td>
+            <td>{{ item.category }}</td>
+            <td>{{ item.area }}</td>
+            <td>{{ item.parameter }}</td>
+            <td>{{ item.standard }}</td>
+            <td>{{ item.method }}</td>
+            <td style="text-align: center;">
+              <span class="status-badge" [attr.data-status]="item.status === 'OK' ? 'CLOSED' : 'DENIED'">
+                {{ item.status }}
+              </span>
+            </td>
+            <td>{{ item.remark || '-' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Approvals & Verification Section -->
+    <div class="report-section" *ngIf="selectedReport.hod_approval || selectedReport.final_qa || selectedReport.pm_details">
       <h3>Approvals & Verification</h3>
       <div class="grid-layout">
         <div *ngIf="hasValue(selectedReport.hod_approval?.approved_by)"><strong>HOD Approved By:</strong> {{ selectedReport.hod_approval?.approved_by }}</div>
         <div *ngIf="hasValue(selectedReport.hod_approval?.remarks)"><strong>HOD Remarks:</strong> {{ selectedReport.hod_approval?.remarks }}</div>
-        <div *ngIf="hasValue(selectedReport.final_qa?.checked_by)"><strong>Final QA Checked By:</strong> {{ selectedReport.final_qa?.checked_by }}</div>
-        <div *ngIf="hasValue(selectedReport.final_qa?.status)"><strong>QA Status:</strong> {{ selectedReport.final_qa?.status }}</div>
-        <div *ngIf="hasValue(selectedReport.final_qa?.remarks)"><strong>QA Remarks:</strong> {{ selectedReport.final_qa?.remarks }}</div>
+        
+        <!-- Breakdown QA approval -->
+        <div *ngIf="selectedReport.intimation_details?.category !== 'PM' && hasValue(selectedReport.final_qa?.checked_by)"><strong>Final QA Checked By:</strong> {{ selectedReport.final_qa?.checked_by }}</div>
+        <div *ngIf="selectedReport.intimation_details?.category !== 'PM' && hasValue(selectedReport.final_qa?.status)"><strong>QA Status:</strong> {{ selectedReport.final_qa?.status }}</div>
+        <div *ngIf="selectedReport.intimation_details?.category !== 'PM' && hasValue(selectedReport.final_qa?.remarks)"><strong>QA Remarks:</strong> {{ selectedReport.final_qa?.remarks }}</div>
+        
+        <!-- PM QA sign-off -->
+        <div *ngIf="selectedReport.intimation_details?.category === 'PM' && hasValue(selectedReport.pm_details?.qa_checked_by)"><strong>QA Signed By:</strong> {{ selectedReport.pm_details.qa_checked_by }}</div>
+        <div *ngIf="selectedReport.intimation_details?.category === 'PM' && hasValue(selectedReport.pm_details?.qa_remarks)"><strong>QA PM Remarks:</strong> {{ selectedReport.pm_details.qa_remarks }}</div>
+        <div *ngIf="selectedReport.intimation_details?.category === 'PM' && hasValue(selectedReport.pm_details?.qa_approved_on)"><strong>QA Approved On:</strong> {{ selectedReport.pm_details.qa_approved_on | date:'dd/MM/yyyy HH:mm' }}</div>
       </div>
     </div>
   </div>

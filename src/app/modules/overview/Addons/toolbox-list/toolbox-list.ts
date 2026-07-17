@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angula
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Intimation as IntimationService } from '../../../../core/services/intimation';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-toolbox-list',
@@ -19,6 +20,7 @@ export class ToolboxListComponent implements OnInit, OnDestroy {
   pageSize = 15;
   filterStatus = 'all';
   filterLocation = 'all';
+  filterCategory = 'all';
   searchQuery = '';
   selectedTool: any = null;
   showFlowModal = false;
@@ -37,7 +39,8 @@ export class ToolboxListComponent implements OnInit, OnDestroy {
   constructor(
     private intimationService: IntimationService,
     private cdr: ChangeDetectorRef,
-    private zone: NgZone
+    private zone: NgZone,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -87,11 +90,14 @@ export class ToolboxListComponent implements OnInit, OnDestroy {
       const locationMatch =
         this.filterLocation === 'all' ||
         (box.location && box.location.toLowerCase() === this.filterLocation.toLowerCase());
+      const categoryMatch =
+        this.filterCategory === 'all' ||
+        (box.maint_category && box.maint_category.toLowerCase() === this.filterCategory.toLowerCase());
       const searchMatch =
         !query ||
         (box.name && box.name.toLowerCase().includes(query)) ||
         (box.code && box.code.toLowerCase().includes(query));
-      return statusMatch && locationMatch && searchMatch;
+      return statusMatch && locationMatch && categoryMatch && searchMatch;
     });
   }
 
@@ -172,6 +178,22 @@ export class ToolboxListComponent implements OnInit, OnDestroy {
     this.selectedTool = null;
     this.showFlowModal = false;
     this.toolFlowInfo = null;
+  }
+
+  viewInScanner(box: any) {
+    if (box && box.name) {
+      this.router.navigate(['/scanner'], { queryParams: { toolCode: box.name } });
+    }
+  }
+
+  getImageUrl(imagePath: string): string {
+    if (!imagePath) return '';
+    let relativePath = imagePath;
+    const mediaIdx = imagePath.indexOf('/media/');
+    if (mediaIdx > -1) {
+      relativePath = imagePath.substring(mediaIdx);
+    }
+    return this.intimationService.baseUrl + relativePath;
   }
 
   getStepState(stepKey: string): 'done' | 'active' | 'pending' {

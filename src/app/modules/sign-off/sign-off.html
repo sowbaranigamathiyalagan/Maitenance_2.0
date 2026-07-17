@@ -1,0 +1,624 @@
+<p-toast></p-toast>
+
+<div class="pm-signoff-page">
+  <div class="header-card">
+    <div class="title-section">
+      <h1>Maintenance Sign-Off</h1>
+      <p class="subtitle">Perform role-based sign-offs for PM schedules and Breakdown records.</p>
+    </div>
+    
+    <div class="controls-row">
+      <div class="filter-controls">
+        <div class="tab-selectors">
+          <button 
+            *ngIf="isPMInCharge"
+            class="tab-btn" 
+            [class.active]="activeTab === 'pm_in_charge'" 
+            (click)="setTab('pm_in_charge')"
+          >
+            <i class="pi pi-user-edit"></i> PM In-Charge Sign-Off
+          </button>
+          <button 
+            *ngIf="isToolroomInCharge"
+            class="tab-btn" 
+            [class.active]="activeTab === 'toolroom'" 
+            (click)="setTab('toolroom')"
+          >
+            <i class="pi pi-wrench"></i> Toolroom In-charge Sign-Off
+          </button>
+          <button 
+            *ngIf="isPPC"
+            class="tab-btn" 
+            [class.active]="activeTab === 'ppc'" 
+            (click)="setTab('ppc')"
+          >
+            <i class="pi pi-comment"></i> PPC Remarks
+          </button>
+          <button 
+            *ngIf="isQA"
+            class="tab-btn" 
+            [class.active]="activeTab === 'qa_remarks'" 
+            (click)="setTab('qa_remarks')"
+          >
+            <i class="pi pi-shield"></i> QA PM Remarks
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NO ACCESS WARNING -->
+  <div class="no-access-card" *ngIf="!isPMInCharge && !isPPC && !isQA && !isToolroomInCharge">
+    <i class="pi pi-exclamation-triangle warning-icon"></i>
+    <h2>Access Restricted</h2>
+    <p>You do not have a role that permits Sign-Offs or entering Remarks.</p>
+  </div>
+
+  <!-- TABLE CONTAINER -->
+  <div class="table-card" *ngIf="isPMInCharge || isPPC || isQA || isToolroomInCharge">
+    
+    <!-- PM IN-CHARGE SIGN-OFF TAB -->
+    <div *ngIf="activeTab === 'pm_in_charge' && isPMInCharge">
+      <p-table
+        class="custom-table"
+        [value]="schedules"
+        [loading]="loading"
+        [rows]="10"
+        [paginator]="true"
+        [(first)]="firstRowIndex"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>S.N.</th>
+            <th>Tool Code</th>
+            <th>Unique ID</th>
+            <th>Mould Name</th>
+            <th>Planned Date</th>
+            <th>Actual Date & Time</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr [class.highlighted-row]="row.id === highlightedScheduleId">
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ row.tool_code }}</strong></td>
+            <td>{{ row.unique_id }}</td>
+            <td>{{ row.mould_name }}</td>
+            <td>{{ row.planned_date | date: 'dd-MMM-yyyy' }}</td>
+            <td>{{ row.actual_date_time ? (row.actual_date_time | date: 'dd-MMM-yyyy hh:mm a') : 'Not Checked In' }}</td>
+            <td>
+              <span class="status-badge" [class]="row.status.toLowerCase().replace('_', '-').replace(' ', '-')">
+                {{ row.status.replace('_', ' ') }}
+              </span>
+            </td>
+            <td>
+              <span [pTooltip]="row.pm_in_charge ? 'Signed by: ' + row.pm_in_charge + (row.remark ? ' - ' + row.remark : '') : ''" tooltipPosition="top">
+                <button 
+                  *ngIf="row.status !== 'IN_PROGRESS'"
+                  pButton 
+                  type="button" 
+                  [label]="row.pm_in_charge ? 'PM: Signed' : 'Sign-Off PM'" 
+                  [icon]="row.pm_in_charge ? 'pi pi-check-circle' : 'pi pi-times-circle'" 
+                  [class]="row.pm_in_charge ? 'p-button-success p-button-sm btn-sign-success' : 'p-button-danger p-button-sm btn-sign-danger'" 
+                  [disabled]="!!row.pm_in_charge"
+                  (click)="openPMSignoffModal(row)">
+                </button>
+              </span>
+              <span *ngIf="row.status === 'IN_PROGRESS'" class="text-warning"><i class="pi pi-spin pi-spinner"></i> Running</span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center">No preventive maintenance schedules found for this period.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- TOOLROOM IN-CHARGE SIGN-OFF TAB -->
+    <div *ngIf="activeTab === 'toolroom' && isToolroomInCharge">
+      <p-table
+        class="custom-table"
+        [value]="toolroomPendingSlips"
+        [loading]="loading"
+        [rows]="10"
+        [paginator]="true"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>S.N.</th>
+            <th>Tool Code</th>
+            <th>Mould Name</th>
+            <th>Problem Observed</th>
+            <th>Created Date</th>
+            <th>Inspection Remarks</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ row.tool_code }}</strong></td>
+            <td>{{ row.tool_name || 'N/A' }}</td>
+            <td>{{ row.problem_observed }}</td>
+            <td>{{ row.date_created | date: 'dd-MMM-yyyy hh:mm a' }}</td>
+            <td>{{ row.feedback || 'No inspection remarks' }}</td>
+            <td>
+              <button 
+                pButton 
+                type="button" 
+                label="Sign-Off Breakdown" 
+                icon="pi pi-check" 
+                class="p-button-success p-button-sm btn-sign-success"
+                (click)="openToolroomModal(row)">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center">No pending Major Breakdowns found for Toolroom In-charge sign-off.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- PPC REMARKS TAB -->
+    <div *ngIf="activeTab === 'ppc' && isPPC">
+      <h3 style="margin-top: 0; margin-bottom: 10px; color: var(--text-main); font-weight: 700; font-size: 1.1rem;">Preventive Maintenance</h3>
+      <p-table
+        class="custom-table"
+        [value]="pendingPPCSchedules"
+        [loading]="loading"
+        [rows]="5"
+        [paginator]="true"
+        styleClass="p-datatable-striped"
+        style="margin-bottom: 25px; display: block;"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>S.N.</th>
+            <th>Tool Code</th>
+            <th>Unique ID</th>
+            <th>Mould Name</th>
+            <th>Checksheets</th>
+            <th>Planned Date</th>
+            <th>Actual Date & Time</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr [class.highlighted-row]="row.id === highlightedScheduleId">
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ row.tool_code }}</strong></td>
+            <td>{{ row.unique_id }}</td>
+            <td>{{ row.mould_name }}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem;">
+                <span *ngIf="row.in_process_checksheet">
+                  <a [href]="row.in_process_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> In-Process
+                  </a>
+                </span>
+                <span *ngIf="row.hot_runner_checksheet">
+                  <a [href]="row.hot_runner_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Hot Runner
+                  </a>
+                </span>
+                <span *ngIf="row.cooling_checksheet">
+                  <a [href]="row.cooling_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Cooling
+                  </a>
+                </span>
+              </div>
+            </td>
+            <td>{{ row.planned_date | date: 'dd-MMM-yyyy' }}</td>
+            <td>{{ row.actual_date_time | date: 'dd-MMM-yyyy hh:mm a' }}</td>
+            <td>
+              <button 
+                pButton 
+                type="button" 
+                label="Enter PPC Remarks" 
+                icon="pi pi-comment" 
+                class="p-button-primary p-button-sm btn-sign-success"
+                (click)="openPPCSignoffModal(row)">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center">No pending completed PM schedules found for PPC remarks.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <h3 style="margin-top: 25px; margin-bottom: 10px; color: var(--text-main); font-weight: 700; font-size: 1.1rem;">Breakdown Maintenance</h3>
+      <p-table
+        class="custom-table"
+        [value]="ppcPendingSlips"
+        [loading]="loading"
+        [rows]="5"
+        [paginator]="true"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>S.N.</th>
+            <th>Tool Code</th>
+            <th>Unique ID</th>
+            <th>Mould Name</th>
+            <th>Checksheets</th>
+            <th>Problem Observed</th>
+            <th>Date & Time</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ row.tool_code }}</strong></td>
+            <td>{{ row.id }}</td>
+            <td>{{ row.tool_name || 'N/A' }}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem;">
+                <span *ngIf="row.in_process_checksheet">
+                  <a [href]="row.in_process_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> In-Process
+                  </a>
+                </span>
+                <span *ngIf="row.hot_runner_checksheet">
+                  <a [href]="row.hot_runner_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Hot Runner
+                  </a>
+                </span>
+                <span *ngIf="row.cooling_checksheet">
+                  <a [href]="row.cooling_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Cooling
+                  </a>
+                </span>
+              </div>
+            </td>
+            <td>{{ row.problem_observed }}</td>
+            <td>{{ row.actual_date_time | date: 'dd-MMM-yyyy hh:mm a' }}</td>
+            <td>
+              <button 
+                pButton 
+                type="button" 
+                label="Enter PPC Remarks" 
+                icon="pi pi-comment" 
+                class="p-button-primary p-button-sm btn-sign-success"
+                (click)="openPPCBDModal(row)">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center">No pending completed Breakdowns found for PPC remarks.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- QA PM REMARKS TAB -->
+    <div *ngIf="activeTab === 'qa_remarks' && isQA">
+      <h3 style="margin-top: 0; margin-bottom: 10px; color: var(--text-main); font-weight: 700; font-size: 1.1rem;">Preventive Maintenance</h3>
+      <p-table
+        class="custom-table"
+        [value]="qaPendingSchedules"
+        [loading]="loading"
+        [rows]="5"
+        [paginator]="true"
+        styleClass="p-datatable-striped"
+        style="margin-bottom: 25px; display: block;"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>S.N.</th>
+            <th>Tool Code</th>
+            <th>Unique ID</th>
+            <th>Mould Name</th>
+            <th>Checksheets</th>
+            <th>Planned Date</th>
+            <th>Actual Date & Time</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ row.tool_code }}</strong></td>
+            <td>{{ row.unique_id }}</td>
+            <td>{{ row.mould_name }}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem;">
+                <span *ngIf="row.in_process_checksheet">
+                  <a [href]="row.in_process_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> In-Process
+                  </a>
+                </span>
+                <span *ngIf="row.hot_runner_checksheet">
+                  <a [href]="row.hot_runner_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Hot Runner
+                  </a>
+                </span>
+                <span *ngIf="row.cooling_checksheet">
+                  <a [href]="row.cooling_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Cooling
+                  </a>
+                </span>
+              </div>
+            </td>
+            <td>{{ row.planned_date | date: 'dd-MMM-yyyy' }}</td>
+            <td>{{ row.actual_date_time | date: 'dd-MMM-yyyy hh:mm a' }}</td>
+            <td>
+              <button 
+                pButton 
+                type="button" 
+                label="Enter Remarks" 
+                icon="pi pi-comment" 
+                class="p-button-primary p-button-sm btn-sign-success"
+                (click)="openQARemarksModal(row)">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center">No pending completed PM schedules found for QA remarks.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <h3 style="margin-top: 25px; margin-bottom: 10px; color: var(--text-main); font-weight: 700; font-size: 1.1rem;">Breakdown Maintenance</h3>
+      <p-table
+        class="custom-table"
+        [value]="qaPendingSlips"
+        [loading]="loading"
+        [rows]="5"
+        [paginator]="true"
+        styleClass="p-datatable-striped"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>S.N.</th>
+            <th>Tool Code</th>
+            <th>Unique ID</th>
+            <th>Mould Name</th>
+            <th>Checksheets</th>
+            <th>Problem Observed</th>
+            <th>Date & Time</th>
+            <th>Action</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row let-i="rowIndex">
+          <tr>
+            <td>{{ i + 1 }}</td>
+            <td><strong>{{ row.tool_code }}</strong></td>
+            <td>{{ row.id }}</td>
+            <td>{{ row.tool_name || 'N/A' }}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem;">
+                <span *ngIf="row.in_process_checksheet">
+                  <a [href]="row.in_process_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> In-Process
+                  </a>
+                </span>
+                <span *ngIf="row.hot_runner_checksheet">
+                  <a [href]="row.hot_runner_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Hot Runner
+                  </a>
+                </span>
+                <span *ngIf="row.cooling_checksheet">
+                  <a [href]="row.cooling_checksheet" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+                    <i class="pi pi-file"></i> Cooling
+                  </a>
+                </span>
+              </div>
+            </td>
+            <td>{{ row.problem_observed }}</td>
+            <td>{{ row.actual_date_time | date: 'dd-MMM-yyyy hh:mm a' }}</td>
+            <td>
+              <button 
+                pButton 
+                type="button" 
+                label="Enter QA Remarks" 
+                icon="pi pi-comment" 
+                class="p-button-primary p-button-sm btn-sign-success"
+                (click)="openQABDModal(row)">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" class="text-center">No pending completed Breakdowns found for QA remarks.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+  </div>
+
+  <!-- PM SIGN-OFF DIALOG -->
+  <p-dialog 
+    header="PM In-Charge Sign-Off" 
+    [(visible)]="showPMSignoffModal" 
+    [modal]="true" 
+    [style]="{width: '450px'}"
+    styleClass="custom-dialog"
+  >
+    <div class="dialog-form" *ngIf="selectedSchedule">
+      <div class="details-summary">
+        <div class="summary-item"><strong>Tool Code:</strong> {{ selectedSchedule.tool_code }}</div>
+        <div class="summary-item"><strong>Mould Name:</strong> {{ selectedSchedule.mould_name }}</div>
+      </div>
+      
+      <div class="form-field">
+        <label for="pmInCharge">PM In-Charge Name <span class="required">*</span></label>
+        <input id="pmInCharge" type="text" pInputText [(ngModel)]="pmSignoffData.pm_in_charge" class="form-input" placeholder="Enter name of PM In-Charge...">
+      </div>
+      
+      <div class="form-field">
+        <label for="pmRemark">PM Remarks</label>
+        <textarea id="pmRemark" pInputTextarea [(ngModel)]="pmSignoffData.remark" class="form-input" rows="3" placeholder="Enter optional PM remarks..."></textarea>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" class="p-button-text p-button-sm" (click)="showPMSignoffModal = false"></button>
+      <button pButton type="button" label="Submit Sign-Off" class="p-button-success p-button-sm btn-sign-success" [disabled]="!pmSignoffData.pm_in_charge" (click)="submitPMSignoff()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- PPC PM REMARKS DIALOG -->
+  <p-dialog 
+    header="PPC Remarks & Verification" 
+    [(visible)]="showPPCSignoffModal" 
+    [modal]="true" 
+    [style]="{width: '450px'}"
+    styleClass="custom-dialog"
+  >
+    <div class="dialog-form" *ngIf="selectedSchedule">
+      <div class="details-summary">
+        <div class="summary-item"><strong>Tool Code:</strong> {{ selectedSchedule.tool_code }}</div>
+        <div class="summary-item"><strong>Mould Name:</strong> {{ selectedSchedule.mould_name }}</div>
+      </div>
+      
+      <div class="form-field">
+        <label for="ppcSign">PPC Planner Name <span class="required">*</span></label>
+        <input id="ppcSign" type="text" pInputText [(ngModel)]="ppcSignoffData.ppc_sign" class="form-input" placeholder="Enter PPC planner name...">
+      </div>
+      
+      <div class="form-field">
+        <label for="ppcRemark">PPC Remarks <span class="required">*</span></label>
+        <textarea id="ppcRemark" pInputTextarea [(ngModel)]="ppcSignoffData.remark" class="form-input" rows="3" placeholder="Enter PPC validation remarks..."></textarea>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" class="p-button-text p-button-sm" (click)="showPPCSignoffModal = false"></button>
+      <button pButton type="button" label="Submit Remarks" class="p-button-success p-button-sm btn-sign-success" [disabled]="!ppcSignoffData.ppc_sign || !ppcSignoffData.remark" (click)="submitPPCSignoff()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- QA PM REMARKS DIALOG -->
+  <p-dialog 
+    header="QA PM Remarks & Closure" 
+    [(visible)]="showQARemarksModal" 
+    [modal]="true" 
+    [style]="{width: '450px'}"
+    styleClass="custom-dialog"
+  >
+    <div class="dialog-form" *ngIf="selectedSchedule">
+      <div class="details-summary">
+        <div class="summary-item"><strong>Tool Code:</strong> {{ selectedSchedule.tool_code }}</div>
+        <div class="summary-item"><strong>Mould Name:</strong> {{ selectedSchedule.mould_name }}</div>
+      </div>
+      
+      <div class="form-field">
+        <label for="qaRemark">QA Remarks <span class="required">*</span></label>
+        <textarea id="qaRemark" pInputTextarea [(ngModel)]="qaRemarksData.remarks" class="form-input" rows="4" placeholder="Enter final QA remarks and observations..."></textarea>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <button pButton type="button" label="Cancel" class="p-button-text p-button-sm" (click)="showQARemarksModal = false"></button>
+      <button pButton type="button" label="Submit Remarks & Close" class="p-button-success p-button-sm btn-sign-success" [disabled]="!qaRemarksData.remarks" (click)="submitQARemarks()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- TOOLROOM SIGNOFF DIALOG -->
+  <p-dialog
+    [(visible)]="showToolroomSignoffModal"
+    header="Toolroom In-charge Sign-Off"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="ticRemark" style="font-weight: 700; color: var(--text-main);">Remarks</label>
+        <textarea 
+          id="ticRemark" 
+          pTextarea 
+          [(ngModel)]="toolroomRemarksData.remarks" 
+          rows="3" 
+          placeholder="Enter approval comments..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        ></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button pButton type="button" label="Cancel" class="p-button-secondary p-button-sm" (click)="showToolroomSignoffModal = false"></button>
+        <button pButton type="button" label="Sign-Off" class="p-button-success p-button-sm btn-sign-success" (click)="submitToolroomSignoff()"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- QA BD REMARKS DIALOG -->
+  <p-dialog
+    [(visible)]="showQABDModal"
+    header="QA Breakdown Remarks"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="qabdRemarks" style="font-weight: 700; color: var(--text-main);">QA Remarks *</label>
+        <textarea 
+          id="qabdRemarks" 
+          pTextarea 
+          [(ngModel)]="qabdRemarksData.remarks" 
+          rows="3" 
+          placeholder="Enter QA breakdown remarks..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        ></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button pButton type="button" label="Cancel" class="p-button-secondary p-button-sm" (click)="showQABDModal = false"></button>
+        <button pButton type="button" label="Submit Remarks" class="p-button-success p-button-sm btn-sign-success" [disabled]="!qabdRemarksData.remarks" (click)="submitQABDRemarks()"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- PPC BD REMARKS DIALOG -->
+  <p-dialog
+    [(visible)]="showPPCBDModal"
+    header="PPC Breakdown Remarks"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="ppcbdName" style="font-weight: 700; color: var(--text-main);">PPC Planner Name *</label>
+        <input 
+          id="ppcbdName" 
+          pInputText 
+          [(ngModel)]="ppcbdRemarksData.name" 
+          placeholder="Enter PPC planner name..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        />
+      </div>
+      <div class="field" style="display: flex; flex-direction: column; gap: 6px;">
+        <label for="ppcbdRemarks" style="font-weight: 700; color: var(--text-main);">PPC Remarks *</label>
+        <textarea 
+          id="ppcbdRemarks" 
+          pTextarea 
+          [(ngModel)]="ppcbdRemarksData.remarks" 
+          rows="3" 
+          placeholder="Enter PPC breakdown remarks..."
+          style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 8px;"
+        ></textarea>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button pButton type="button" label="Cancel" class="p-button-secondary p-button-sm" (click)="showPPCBDModal = false"></button>
+        <button pButton type="button" label="Submit Remarks" class="p-button-success p-button-sm btn-sign-success" [disabled]="!ppcbdRemarksData.name || !ppcbdRemarksData.remarks" (click)="submitPPCBDRemarks()"></button>
+      </div>
+    </div>
+  </p-dialog>
+
+</div>
